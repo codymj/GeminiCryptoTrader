@@ -7,7 +7,8 @@
 
 import sys
 from ui_SetupDialog import Ui_SetupDialog
-from PyQt5 import QtGui, QtWidgets, uic
+from PyQt5 import uic, QtGui, QtWidgets
+from PyQt5.QtCore import pyqtSlot
 
 class SetupDialog(QtWidgets.QDialog):
     def __init__(self, parent):
@@ -20,3 +21,8 @@ class SetupDialog(QtWidgets.QDialog):
 
         # Connect actions
         ui.cancelButton.clicked.connect(self.close)
+        #ui.okButton.clicked.connect(self.saveAccountInfoToFile)
+
+    # Save account information to file
+    #@pyqtSlot()
+    #def saveAccountInfoToFile(self):
