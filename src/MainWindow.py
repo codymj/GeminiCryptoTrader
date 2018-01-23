@@ -14,4 +14,5 @@ class MainWindow(QtWidgets.QMainWindow):
         super(MainWindow, self).__init__()
         ui = Ui_MainWindow()
         ui.setupUi(self)
-        self.show()
+
+        # Connect actions here
