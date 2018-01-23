@@ -32,7 +32,5 @@
 *.app
 
 # Custom
-.qmake*
-moc/*
-obj/*
+src/__pycache__
 API-Documentation/*
