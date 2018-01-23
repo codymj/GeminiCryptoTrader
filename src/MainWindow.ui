@@ -421,7 +421,7 @@
      <height>22</height>
     </rect>
    </property>
-   <widget class="QMenu" name="menuFile">
+   <widget class="QMenu" name="fileMenu">
     <property name="title">
      <string>&amp;File</string>
     </property>
@@ -436,7 +436,7 @@
     <addaction name="separator"/>
     <addaction name="exitAction"/>
    </widget>
-   <widget class="QMenu" name="menuEdit">
+   <widget class="QMenu" name="editMenu">
     <property name="title">
      <string>&amp;Edit</string>
     </property>
@@ -444,14 +444,14 @@
     <addaction name="separator"/>
     <addaction name="notificationsAction"/>
    </widget>
-   <widget class="QMenu" name="menuView">
+   <widget class="QMenu" name="viewMenu">
     <property name="title">
      <string>&amp;View</string>
     </property>
     <addaction name="hideStatusbarAction"/>
     <addaction name="showOrderbookAction"/>
    </widget>
-   <widget class="QMenu" name="menuHelp">
+   <widget class="QMenu" name="helpMenu">
     <property name="title">
      <string>&amp;Help</string>
     </property>
@@ -460,10 +460,10 @@
     <addaction name="action_Visit_Gemini_API_Docs"/>
     <addaction name="action_Gemini_Exchange"/>
    </widget>
-   <addaction name="menuFile"/>
-   <addaction name="menuEdit"/>
-   <addaction name="menuView"/>
-   <addaction name="menuHelp"/>
+   <addaction name="fileMenu"/>
+   <addaction name="editMenu"/>
+   <addaction name="viewMenu"/>
+   <addaction name="helpMenu"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="action_Edit">
