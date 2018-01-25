@@ -11,6 +11,7 @@ from PyQt5.QtCore import pyqtSlot
 from ui_MainWindow import Ui_MainWindow
 from SetupDialog import SetupDialog
 from BuyDialog import BuyDialog
+from SellDialog import SellDialog
 
 class MainWindow(QtWidgets.QMainWindow):
     # Initializer
@@ -26,6 +27,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # Connect actions
         ui.setupAction.triggered.connect(self.openSetupDialog)
         ui.buyAction.triggered.connect(self.openBuyDialog)
+        ui.sellAction.triggered.connect(self.openSellDialog)
         ui.exitAction.triggered.connect(self.close)
 
     # Open SetupDialog
@@ -37,3 +39,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def openBuyDialog(self):
         bd = BuyDialog(self)
         bd.show()
+    @pyqtSlot()
+    def openSellDialog(self):
+        sd = SellDialog(self)
+        sd.show()
