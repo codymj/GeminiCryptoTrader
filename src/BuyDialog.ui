@@ -58,7 +58,7 @@
     </layout>
    </item>
    <item row="0" column="0">
-    <widget class="QTabWidget" name="ethBtcPriceLE">
+    <widget class="QTabWidget" name="buyTabWidget">
      <property name="currentIndex">
       <number>0</number>
      </property>
@@ -593,7 +593,7 @@
          <item>
           <layout class="QHBoxLayout" name="horizontalLayout_16">
            <item>
-            <widget class="QLineEdit" name="priceLE_5"/>
+            <widget class="QLineEdit" name="ethBtcPriceLE"/>
            </item>
            <item>
             <widget class="QLabel" name="label_31">
