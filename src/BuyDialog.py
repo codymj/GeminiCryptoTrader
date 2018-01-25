@@ -21,4 +21,3 @@ class BuyDialog(QtWidgets.QDialog):
 
         # Connect actions
         ui.cancelButton.clicked.connect(self.close)
-        #ui.okButton.clicked.connect(self.saveAccountInfoToFile)
