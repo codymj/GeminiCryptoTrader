@@ -10,6 +10,7 @@ from PyQt5 import uic, QtGui, QtWidgets
 from PyQt5.QtCore import pyqtSlot
 from ui_MainWindow import Ui_MainWindow
 from SetupDialog import SetupDialog
+from BuyDialog import BuyDialog
 
 class MainWindow(QtWidgets.QMainWindow):
     # Initializer
@@ -24,6 +25,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # Connect actions
         ui.setupAction.triggered.connect(self.openSetupDialog)
+        ui.buyAction.triggered.connect(self.openBuyDialog)
         ui.exitAction.triggered.connect(self.close)
 
     # Open SetupDialog
@@ -31,3 +33,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def openSetupDialog(self):
         sd = SetupDialog(self)
         sd.show()
+    @pyqtSlot()
+    def openBuyDialog(self):
+        bd = BuyDialog(self)
+        bd.show()
