@@ -433,7 +433,7 @@ class Ui_SellDialog(object):
 
     def retranslateUi(self, SellDialog):
         _translate = QtCore.QCoreApplication.translate
-        SellDialog.setWindowTitle(_translate("SellDialog", "Buy"))
+        SellDialog.setWindowTitle(_translate("SellDialog", "Sell"))
         self.cancelButton.setText(_translate("SellDialog", "&Cancel"))
         self.sellButton.setText(_translate("SellDialog", "&Sell"))
         self.label.setText(_translate("SellDialog", "Order Type:"))

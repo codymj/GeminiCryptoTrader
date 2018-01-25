@@ -6,7 +6,7 @@
 ################################################################################
 
 import sys
-from ui_BuyDialog import Ui_BuyDialog
+from ui_SellDialog import Ui_SellDialog
 from PyQt5 import uic, QtGui, QtWidgets
 from PyQt5.QtCore import pyqtSlot
 

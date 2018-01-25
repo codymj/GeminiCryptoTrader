@@ -23,7 +23,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>Buy</string>
+   <string>Sell</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="1" column="0">
