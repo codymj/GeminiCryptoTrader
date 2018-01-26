@@ -12,6 +12,7 @@ from ui_MainWindow import Ui_MainWindow
 from SetupDialog import SetupDialog
 from BuyDialog import BuyDialog
 from SellDialog import SellDialog
+from ConditionalDialog import ConditionalDialog
 
 class MainWindow(QtWidgets.QMainWindow):
     # Initializer
@@ -28,6 +29,7 @@ class MainWindow(QtWidgets.QMainWindow):
         ui.setupAction.triggered.connect(self.openSetupDialog)
         ui.buyAction.triggered.connect(self.openBuyDialog)
         ui.sellAction.triggered.connect(self.openSellDialog)
+        ui.conditionalAction.triggered.connect(self.openConditionalDialog)
         ui.exitAction.triggered.connect(self.close)
 
     # Open SetupDialog
@@ -43,3 +45,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def openSellDialog(self):
         sd = SellDialog(self)
         sd.show()
+    @pyqtSlot()
+    def openConditionalDialog(self):
+        cd = ConditionalDialog(self)
+        cd.show()
