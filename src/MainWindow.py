@@ -7,6 +7,7 @@
 
 import sys
 import icons
+from urllib.request import urlopen
 from PyQt5 import uic, QtGui, QtWidgets
 from PyQt5.QtWidgets import QLabel, QPushButton
 from PyQt5.QtGui import QPixmap
@@ -32,14 +33,12 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # Status Bar
         self.statusBar.showMessage('Gemini CryptoTrader started...', msecs=3000)
 
-        self.dataIconLabel = QLabel(self)
-        self.dataIconPM = QPixmap(':/red-circle.png')
-        self.dataIconLabel.setPixmap(self.dataIconPM)
-        self.dataIconLabel.setToolTip('Flashes when data is received')
-        self.statusBar.addPermanentWidget(self.dataIconLabel)
-
+        # Check internet connection
+        if self.internetAvailable(self):
+            self.connectIconPM = QPixmap(':/yellow-circle.png')
+        else:
+            self.connectIconPM = QPixmap(':/red-circle.png')
         self.connectIconLabel = QLabel(self)
-        self.connectIconPM = QPixmap(':/red-circle.png')
         self.connectIconLabel.setPixmap(self.connectIconPM)
         self.statusBar.setToolTip('Green when connected to exchange')
         self.statusBar.addPermanentWidget(self.connectIconLabel)
@@ -52,6 +51,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.genDepositAction.triggered.connect(self.openGenDepositAddrDialog)
         self.withdrawToAction.triggered.connect(self.openWithdrawToDialog)
         self.exitAction.triggered.connect(self.close)
+        self.toggleStatusBarAction.triggered.connect(self.toggleStatusBar)
 
     # Slots
     @pyqtSlot()
@@ -78,3 +78,19 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def openWithdrawToDialog(self):
         wd = WithdrawToDialog(self)
         wd.show()
+    @pyqtSlot()
+    def toggleStatusBar(self):
+        if self.statusBar.isVisible():
+            self.statusBar.hide()
+            self.toggleStatusBarAction.setText('Show Statusbar')
+        else:
+            self.statusBar.show()
+            self.toggleStatusBarAction.setText('Hide Statusbar')
+
+    @staticmethod
+    def internetAvailable(arg):
+        try:
+            urlopen('http://74.125.21.99', timeout=1)
+            return True
+        except urllib2.URLError as err:
+            return False
