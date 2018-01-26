@@ -6,7 +6,10 @@
 ################################################################################
 
 import sys
+import icons
 from PyQt5 import uic, QtGui, QtWidgets
+from PyQt5.QtWidgets import QLabel, QPushButton
+from PyQt5.QtGui import QPixmap
 from PyQt5.QtCore import pyqtSlot
 from ui_MainWindow import Ui_MainWindow
 from SetupDialog import SetupDialog
@@ -25,6 +28,21 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     # Initialize UI
     def initUI(self):
         self.setupUi(self)
+
+        # Status Bar
+        self.statusBar.showMessage('Gemini CryptoTrader started...', msecs=3000)
+
+        self.dataIconLabel = QLabel(self)
+        self.dataIconPM = QPixmap(':/red-circle.png')
+        self.dataIconLabel.setPixmap(self.dataIconPM)
+        self.dataIconLabel.setToolTip('Flashes when data is received')
+        self.statusBar.addPermanentWidget(self.dataIconLabel)
+
+        self.connectIconLabel = QLabel(self)
+        self.connectIconPM = QPixmap(':/red-circle.png')
+        self.connectIconLabel.setPixmap(self.connectIconPM)
+        self.statusBar.setToolTip('Green when connected to exchange')
+        self.statusBar.addPermanentWidget(self.connectIconLabel)
 
         # Connect actions
         self.setupAction.triggered.connect(self.openSetupDialog)
