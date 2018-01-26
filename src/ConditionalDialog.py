@@ -1,8 +1,8 @@
 ################################################################################
-#
-#  ConditionalDialog.py
-#  Author: Cody Johnson <codyj@protonmail.com>
-#
+#                                                                              #
+#  ConditionalDialog.py                                                        #
+#  Author: Cody Johnson <codyj@protonmail.com>                                 #
+#                                                                              #
 ################################################################################
 
 import sys

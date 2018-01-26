@@ -1,8 +1,8 @@
 ################################################################################
-#
-#  SellDialog.py
-#  Author: Cody Johnson <codyj@protonmail.com>
-#
+#                                                                              #
+#  SellDialog.py                                                               #
+#  Author: Cody Johnson <codyj@protonmail.com>                                 #
+#                                                                              #
 ################################################################################
 
 import sys

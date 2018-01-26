@@ -1,8 +1,8 @@
 ################################################################################
-#
-#  BuyDialog.py
-#  Author: Cody Johnson <codyj@protonmail.com>
-#
+#                                                                              #
+#  BuyDialog.py                                                                #
+#  Author: Cody Johnson <codyj@protonmail.com>                                 #
+#                                                                              #
 ################################################################################
 
 import sys

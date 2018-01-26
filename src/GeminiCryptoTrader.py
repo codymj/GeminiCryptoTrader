@@ -1,8 +1,8 @@
 ################################################################################
-#
-#  GeminiCryptoTrader.py
-#  Author: Cody Johnson <codyj@protonmail.com>
-#
+#                                                                              #
+#  GeminiCryptoTrader.py                                                       #
+#  Author: Cody Johnson <codyj@protonmail.com>                                 #
+#                                                                              #
 ################################################################################
 
 from MainWindow import MainWindow

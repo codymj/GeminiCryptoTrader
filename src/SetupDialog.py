@@ -1,8 +1,8 @@
 ################################################################################
-#
-#  SetupDialog.py
-#  Author: Cody Johnson <codyj@protonmail.com>
-#
+#                                                                              #
+#  SetupDialog.py                                                              #
+#  Author: Cody Johnson <codyj@protonmail.com>                                 #
+#                                                                              #
 ################################################################################
 
 import sys

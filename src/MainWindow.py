@@ -1,8 +1,8 @@
 ################################################################################
-#
-#  MainWindow.py
-#  Author: Cody Johnson <codyj@protonmail.com>
-#
+#                                                                              #
+#  MainWindow.py                                                               #
+#  Author: Cody Johnson <codyj@protonmail.com>                                 #
+#                                                                              #
 ################################################################################
 
 import sys
