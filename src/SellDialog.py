@@ -11,10 +11,12 @@ from PyQt5 import uic, QtGui, QtWidgets
 from PyQt5.QtCore import pyqtSlot
 
 class SellDialog(QtWidgets.QDialog):
+    # Initializer
     def __init__(self, parent):
         super(SellDialog, self).__init__(parent)
         self.initUI()
 
+    # Initialize UI
     def initUI(self):
         ui = Ui_SellDialog()
         ui.setupUi(self)

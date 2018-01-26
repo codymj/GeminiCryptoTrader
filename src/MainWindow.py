@@ -32,7 +32,7 @@ class MainWindow(QtWidgets.QMainWindow):
         ui.conditionalAction.triggered.connect(self.openConditionalDialog)
         ui.exitAction.triggered.connect(self.close)
 
-    # Open SetupDialog
+    # Slots
     @pyqtSlot()
     def openSetupDialog(self):
         sd = SetupDialog(self)

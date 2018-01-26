@@ -11,10 +11,12 @@ from PyQt5 import uic, QtGui, QtWidgets
 from PyQt5.QtCore import pyqtSlot
 
 class SetupDialog(QtWidgets.QDialog):
+    # Initializer
     def __init__(self, parent):
         super(SetupDialog, self).__init__(parent)
         self.initUI()
 
+    # Initialize UI
     def initUI(self):
         ui = Ui_SetupDialog()
         ui.setupUi(self)
