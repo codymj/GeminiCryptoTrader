@@ -10,7 +10,7 @@ from ui_BuyDialog import Ui_BuyDialog
 from PyQt5 import uic, QtGui, QtWidgets
 from PyQt5.QtCore import pyqtSlot
 
-class BuyDialog(QtWidgets.QDialog):
+class BuyDialog(QtWidgets.QDialog, Ui_BuyDialog):
     # Initializer
     def __init__(self, parent):
         super(BuyDialog, self).__init__(parent)
@@ -18,8 +18,7 @@ class BuyDialog(QtWidgets.QDialog):
 
     # Initialize UI
     def initUI(self):
-        ui = Ui_BuyDialog()
-        ui.setupUi(self)
+        self.setupUi(self)
 
         # Connect actions
-        ui.cancelButton.clicked.connect(self.close)
+        self.cancelButton.clicked.connect(self.close)

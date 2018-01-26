@@ -10,7 +10,7 @@ from ui_ConditionalDialog import Ui_ConditionalDialog
 from PyQt5 import uic, QtGui, QtWidgets
 from PyQt5.QtCore import pyqtSlot
 
-class ConditionalDialog(QtWidgets.QDialog):
+class ConditionalDialog(QtWidgets.QDialog, Ui_ConditionalDialog):
     # Initializer
     def __init__(self, parent):
         super(ConditionalDialog, self).__init__(parent)
@@ -18,8 +18,7 @@ class ConditionalDialog(QtWidgets.QDialog):
 
     # Initialize UI
     def initUI(self):
-        ui = Ui_ConditionalDialog()
-        ui.setupUi(self)
+        self.setupUi(self)
 
         # Connect actions
-        ui.cancelButton.clicked.connect(self.close)
+        self.cancelButton.clicked.connect(self.close)

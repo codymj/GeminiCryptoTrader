@@ -14,8 +14,9 @@ from BuyDialog import BuyDialog
 from SellDialog import SellDialog
 from ConditionalDialog import ConditionalDialog
 from GenDepositAddrDialog import GenDepositAddrDialog
+from WithdrawToDialog import WithdrawToDialog
 
-class MainWindow(QtWidgets.QMainWindow):
+class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     # Initializer
     def __init__(self):
         super(MainWindow, self).__init__()
@@ -23,16 +24,16 @@ class MainWindow(QtWidgets.QMainWindow):
 
     # Initialize UI
     def initUI(self):
-        ui = Ui_MainWindow()
-        ui.setupUi(self)
+        self.setupUi(self)
 
         # Connect actions
-        ui.setupAction.triggered.connect(self.openSetupDialog)
-        ui.buyAction.triggered.connect(self.openBuyDialog)
-        ui.sellAction.triggered.connect(self.openSellDialog)
-        ui.conditionalAction.triggered.connect(self.openConditionalDialog)
-        ui.genDepositAction.triggered.connect(self.openGenDepositAddrDialog)
-        ui.exitAction.triggered.connect(self.close)
+        self.setupAction.triggered.connect(self.openSetupDialog)
+        self.buyAction.triggered.connect(self.openBuyDialog)
+        self.sellAction.triggered.connect(self.openSellDialog)
+        self.conditionalAction.triggered.connect(self.openConditionalDialog)
+        self.genDepositAction.triggered.connect(self.openGenDepositAddrDialog)
+        self.withdrawToAction.triggered.connect(self.openWithdrawToDialog)
+        self.exitAction.triggered.connect(self.close)
 
     # Slots
     @pyqtSlot()
@@ -55,3 +56,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def openGenDepositAddrDialog(self):
         gd = GenDepositAddrDialog(self)
         gd.show()
+    @pyqtSlot()
+    def openWithdrawToDialog(self):
+        wd = WithdrawToDialog(self)
+        wd.show()

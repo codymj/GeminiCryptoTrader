@@ -10,7 +10,7 @@ from ui_SellDialog import Ui_SellDialog
 from PyQt5 import uic, QtGui, QtWidgets
 from PyQt5.QtCore import pyqtSlot
 
-class SellDialog(QtWidgets.QDialog):
+class SellDialog(QtWidgets.QDialog, Ui_SellDialog):
     # Initializer
     def __init__(self, parent):
         super(SellDialog, self).__init__(parent)
@@ -18,8 +18,7 @@ class SellDialog(QtWidgets.QDialog):
 
     # Initialize UI
     def initUI(self):
-        ui = Ui_SellDialog()
-        ui.setupUi(self)
+        self.setupUi(self)
 
         # Connect actions
-        ui.cancelButton.clicked.connect(self.close)
+        self.cancelButton.clicked.connect(self.close)

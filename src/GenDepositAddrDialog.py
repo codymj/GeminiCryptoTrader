@@ -10,7 +10,7 @@ from ui_GenDepositAddrDialog import Ui_GenDepositAddrDialog
 from PyQt5 import uic, QtGui, QtWidgets
 from PyQt5.QtCore import pyqtSlot
 
-class GenDepositAddrDialog(QtWidgets.QDialog):
+class GenDepositAddrDialog(QtWidgets.QDialog, Ui_GenDepositAddrDialog):
     # Initializer
     def __init__(self, parent):
         super(GenDepositAddrDialog, self).__init__(parent)
@@ -18,8 +18,7 @@ class GenDepositAddrDialog(QtWidgets.QDialog):
 
     # Initialize UI
     def initUI(self):
-        ui = Ui_GenDepositAddrDialog()
-        ui.setupUi(self)
+        self.setupUi(self)
 
         # Connect actions
-        ui.closeButton.clicked.connect(self.close)
+        self.closeButton.clicked.connect(self.close)
