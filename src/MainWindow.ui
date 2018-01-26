@@ -455,7 +455,7 @@
     <property name="title">
      <string>&amp;Help</string>
     </property>
-    <addaction name="action_About"/>
+    <addaction name="aboutAction"/>
     <addaction name="separator"/>
     <addaction name="action_Visit_Gemini_API_Docs"/>
     <addaction name="action_Gemini_Exchange"/>
@@ -526,7 +526,7 @@
     <string>&amp;Show Orderbook</string>
    </property>
   </action>
-  <action name="action_About">
+  <action name="aboutAction">
    <property name="text">
     <string>&amp;About</string>
    </property>

@@ -19,6 +19,7 @@ from SellDialog import SellDialog
 from ConditionalDialog import ConditionalDialog
 from GenDepositAddrDialog import GenDepositAddrDialog
 from WithdrawToDialog import WithdrawToDialog
+from AboutDialog import AboutDialog
 
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     # Initializer
@@ -35,7 +36,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         # Check internet connection
         if self.internetAvailable(self):
-            self.connectIconPM = QPixmap(':/yellow-circle.png')
+            self.connectIconPM = QPixmap(':/orange-circle.png')
         else:
             self.connectIconPM = QPixmap(':/red-circle.png')
         self.connectIconLabel = QLabel(self)
@@ -52,6 +53,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.withdrawToAction.triggered.connect(self.openWithdrawToDialog)
         self.exitAction.triggered.connect(self.close)
         self.toggleStatusBarAction.triggered.connect(self.toggleStatusBar)
+        self.aboutAction.triggered.connect(self.openAboutDialog)
 
     # Slots
     @pyqtSlot()
@@ -78,6 +80,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def openWithdrawToDialog(self):
         wd = WithdrawToDialog(self)
         wd.show()
+    @pyqtSlot()
+    def openAboutDialog(self):
+        ad = AboutDialog(self)
+        ad.show()
     @pyqtSlot()
     def toggleStatusBar(self):
         if self.statusBar.isVisible():
