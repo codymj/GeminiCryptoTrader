@@ -13,6 +13,7 @@ from SetupDialog import SetupDialog
 from BuyDialog import BuyDialog
 from SellDialog import SellDialog
 from ConditionalDialog import ConditionalDialog
+from GenDepositAddrDialog import GenDepositAddrDialog
 
 class MainWindow(QtWidgets.QMainWindow):
     # Initializer
@@ -30,6 +31,7 @@ class MainWindow(QtWidgets.QMainWindow):
         ui.buyAction.triggered.connect(self.openBuyDialog)
         ui.sellAction.triggered.connect(self.openSellDialog)
         ui.conditionalAction.triggered.connect(self.openConditionalDialog)
+        ui.genDepositAction.triggered.connect(self.openGenDepositAddrDialog)
         ui.exitAction.triggered.connect(self.close)
 
     # Slots
@@ -49,3 +51,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def openConditionalDialog(self):
         cd = ConditionalDialog(self)
         cd.show()
+    @pyqtSlot()
+    def openGenDepositAddrDialog(self):
+        gd = GenDepositAddrDialog(self)
+        gd.show()
