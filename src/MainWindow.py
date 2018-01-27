@@ -7,7 +7,9 @@
 
 import sys
 import icons
+import urllib
 from urllib.request import urlopen
+from urllib.error import URLError
 from PyQt5 import uic, QtGui, QtWidgets
 from PyQt5.QtWidgets import QLabel, QPushButton
 from PyQt5.QtGui import QPixmap
@@ -98,5 +100,5 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         try:
             urlopen('http://74.125.21.99', timeout=1)
             return True
-        except urllib2.URLError as err:
+        except URLError as err:
             return False
