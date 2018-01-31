@@ -35,3 +35,4 @@
 src/__pycache__
 API-Documentation/*
 *.geany
+src/*.json
