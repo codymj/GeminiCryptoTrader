@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'SetupDialog.ui'
+# Form implementation generated from reading ui file 'src/SetupDialog.ui'
 #
 # Created by: PyQt5 UI code generator 5.10
 #
@@ -53,12 +53,15 @@ class Ui_SetupDialog(object):
         self.horizontalLayout.addWidget(self.manageButton)
         spacerItem1 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.horizontalLayout.addItem(spacerItem1)
-        self.cancelButton = QtWidgets.QPushButton(SetupDialog)
-        self.cancelButton.setObjectName("cancelButton")
-        self.horizontalLayout.addWidget(self.cancelButton)
-        self.okButton = QtWidgets.QPushButton(SetupDialog)
-        self.okButton.setObjectName("okButton")
-        self.horizontalLayout.addWidget(self.okButton)
+        self.updateButton = QtWidgets.QPushButton(SetupDialog)
+        self.updateButton.setObjectName("updateButton")
+        self.horizontalLayout.addWidget(self.updateButton)
+        self.addButton = QtWidgets.QPushButton(SetupDialog)
+        self.addButton.setObjectName("addButton")
+        self.horizontalLayout.addWidget(self.addButton)
+        self.doneButton = QtWidgets.QPushButton(SetupDialog)
+        self.doneButton.setObjectName("doneButton")
+        self.horizontalLayout.addWidget(self.doneButton)
         self.verticalLayout_2.addLayout(self.horizontalLayout)
         self.gridLayout.addLayout(self.verticalLayout_2, 0, 0, 1, 1)
 
@@ -73,6 +76,7 @@ class Ui_SetupDialog(object):
         self.label_3.setText(_translate("SetupDialog", "Private Key:"))
         self.sandboxCB.setText(_translate("SetupDialog", "Sandbox Account?"))
         self.manageButton.setText(_translate("SetupDialog", "&Manage"))
-        self.cancelButton.setText(_translate("SetupDialog", "&Cancel"))
-        self.okButton.setText(_translate("SetupDialog", "&Ok"))
+        self.updateButton.setText(_translate("SetupDialog", "&Update"))
+        self.addButton.setText(_translate("SetupDialog", "&Add"))
+        self.doneButton.setText(_translate("SetupDialog", "&Done"))
 
