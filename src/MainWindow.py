@@ -57,35 +57,57 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.toggleStatusBarAction.triggered.connect(self.toggleStatusBar)
         self.aboutAction.triggered.connect(self.openAboutDialog)
 
-    # Slots
+    # Opens setup dialog
+    ############################################################################
     @pyqtSlot()
     def openSetupDialog(self):
         sd = SetupDialog(self)
         sd.show()
+
+    # Opens buy dialog
+    ############################################################################
     @pyqtSlot()
     def openBuyDialog(self):
         bd = BuyDialog(self)
         bd.show()
+
+    # Opens sell dialog
+    ############################################################################
     @pyqtSlot()
     def openSellDialog(self):
         sd = SellDialog(self)
         sd.show()
+
+    # Opens conditional dialog
+    ############################################################################
     @pyqtSlot()
     def openConditionalDialog(self):
         cd = ConditionalDialog(self)
         cd.show()
+
+    # Opens dialog to generate new deposit address
+    ############################################################################
     @pyqtSlot()
     def openGenDepositAddrDialog(self):
         gd = GenDepositAddrDialog(self)
         gd.show()
+
+    # Opens withdraw dialog
+    ############################################################################
     @pyqtSlot()
     def openWithdrawToDialog(self):
         wd = WithdrawToDialog(self)
         wd.show()
+
+    # Opens about dialog
+    ############################################################################
     @pyqtSlot()
     def openAboutDialog(self):
         ad = AboutDialog(self)
         ad.show()
+
+    # Toggles status bar on or off
+    ############################################################################
     @pyqtSlot()
     def toggleStatusBar(self):
         if self.statusBar.isVisible():
@@ -95,6 +117,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.statusBar.show()
             self.toggleStatusBarAction.setText('Hide Statusbar')
 
+    # Checks internet connection
+    ############################################################################
     @staticmethod
     def internetAvailable(arg):
         try:
