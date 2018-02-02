@@ -31,14 +31,16 @@ class ManageDialog(QtWidgets.QDialog, Ui_ManageDialog):
         self.loadButton.clicked.connect(self.loadAccount)
         self.removeButton.clicked.connect(self.removeAccount)
 
-    # Slots
+    # Saves account information to file
+    ############################################################################
     @pyqtSlot()
     def saveAccountInfoToFile(self):
         with open('AccountData.json', 'w') as f:
             json.dump(self.accountsData, f)
         self.close()
 
-    # Functions
+    # Loads account from file into the setup dialog
+    ############################################################################
     def loadAccount(self):
         idToLoad = self.accountList.currentItem().text().rstrip()
 
@@ -53,6 +55,8 @@ class ManageDialog(QtWidgets.QDialog, Ui_ManageDialog):
         self.saveAccountInfoToFile()
         self.accept()
 
+    # Removes account from file
+    ############################################################################
     def removeAccount(self):
         idToRemove = self.accountList.currentItem().text()
         for i in self.accountsData:
@@ -61,12 +65,16 @@ class ManageDialog(QtWidgets.QDialog, Ui_ManageDialog):
                 break
         self.refreshList()
 
+    # Refreshes the account list
+    ############################################################################
     def refreshList(self):
         self.accountList.clear()
         for i in self.accountsData:
             QListWidgetItem(i['accountId'], self.accountList)
         self.checkEmptyList()
 
+    # Checks for empty list to prevent invalid actions
+    ############################################################################
     def checkEmptyList(self):
         if self.accountList.count() == 0:
             self.loadButton.setEnabled(False)
