@@ -25,11 +25,15 @@ class WithdrawToDialog(QtWidgets.QDialog, Ui_WithdrawToDialog):
         self.ethRB.clicked.connect(self.ethRBClicked)
         self.cancelButton.clicked.connect(self.close)
 
-    # Slots
+    # Changes currency unit to BTC
+    ############################################################################
     @pyqtSlot()
     def btcRBClicked(self):
         if self.btcRB.isChecked():
             self.amountUnitLabel.setText('BTC')
+
+    # Changes currency unit to ETH
+    ############################################################################
     @pyqtSlot()
     def ethRBClicked(self):
         if self.ethRB.isChecked():
