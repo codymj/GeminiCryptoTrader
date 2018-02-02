@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'src/SetupDialog.ui'
+# Form implementation generated from reading ui file 'SetupDialog.ui'
 #
-# Created by: PyQt5 UI code generator 5.9.2
+# Created by: PyQt5 UI code generator 5.10
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -12,7 +12,10 @@ class Ui_SetupDialog(object):
     def setupUi(self, SetupDialog):
         SetupDialog.setObjectName("SetupDialog")
         SetupDialog.setWindowModality(QtCore.Qt.ApplicationModal)
-        SetupDialog.resize(320, 240)
+        SetupDialog.resize(420, 250)
+        SetupDialog.setMinimumSize(QtCore.QSize(420, 250))
+        SetupDialog.setMaximumSize(QtCore.QSize(420, 250))
+        SetupDialog.setBaseSize(QtCore.QSize(0, 0))
         self.gridLayout = QtWidgets.QGridLayout(SetupDialog)
         self.gridLayout.setObjectName("gridLayout")
         self.verticalLayout_2 = QtWidgets.QVBoxLayout()
@@ -41,10 +44,15 @@ class Ui_SetupDialog(object):
         self.sandboxCB.setObjectName("sandboxCB")
         self.verticalLayout.addWidget(self.sandboxCB)
         self.verticalLayout_2.addLayout(self.verticalLayout)
+        spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        self.verticalLayout_2.addItem(spacerItem)
         self.horizontalLayout = QtWidgets.QHBoxLayout()
         self.horizontalLayout.setObjectName("horizontalLayout")
-        spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
-        self.horizontalLayout.addItem(spacerItem)
+        self.manageButton = QtWidgets.QPushButton(SetupDialog)
+        self.manageButton.setObjectName("manageButton")
+        self.horizontalLayout.addWidget(self.manageButton)
+        spacerItem1 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.horizontalLayout.addItem(spacerItem1)
         self.cancelButton = QtWidgets.QPushButton(SetupDialog)
         self.cancelButton.setObjectName("cancelButton")
         self.horizontalLayout.addWidget(self.cancelButton)
@@ -64,6 +72,7 @@ class Ui_SetupDialog(object):
         self.label_2.setText(_translate("SetupDialog", "API Key:"))
         self.label_3.setText(_translate("SetupDialog", "Private Key:"))
         self.sandboxCB.setText(_translate("SetupDialog", "Sandbox Account?"))
+        self.manageButton.setText(_translate("SetupDialog", "&Manage"))
         self.cancelButton.setText(_translate("SetupDialog", "&Cancel"))
         self.okButton.setText(_translate("SetupDialog", "&Ok"))
 
