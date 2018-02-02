@@ -28,51 +28,20 @@ class SetupDialog(QtWidgets.QDialog, Ui_SetupDialog):
         self.setupUi(self)
 
         # Connect actions
-        self.cancelButton.clicked.connect(self.close)
-        self.okButton.clicked.connect(self.saveAccountInfoToFile)
+        self.doneButton.clicked.connect(self.accept)
+        self.addButton.clicked.connect(self.saveAccountInfoToFile)
+        self.updateButton.clicked.connect(self.updateAccountInfo)
         self.manageButton.clicked.connect(self.openManageDialog)
 
-    # Slots
+    # Save account information to file
+    ############################################################################
     @pyqtSlot()
     def saveAccountInfoToFile(self):
-        # Check for duplicates
-        for i in self.accountsData:
-            if i['accountId'] == self.accountIdLE.text():
-                msg = QMessageBox()
-                msg.setText('This Account ID already exists.')
-                msg.exec()
-                return
-            if i['apiKey'] == self.apiKeyLE.text():
-                msg = QMessageBox()
-                msg.setText('This API key already exists.')
-                msg.exec()
-                return
-            if i['privKey'] == self.privateKeyLE.text():
-                msg = QMessageBox()
-                msg.setText('This private key already exists.')
-                msg.exec()
-                return
+        data = self.inputToJson()
 
         # Check for invalid input
-        if (self.apiKeyLE.text() == '' or self.accountIdLE.text() == ''):
-            msg = QMessageBox()
-            msg.setText('Account ID and API Key are required.')
-            msg.exec()
+        if not self.validInput(data, False):
             return
-
-        # Structure input into JSON
-        data = {
-            'lastUsed':     True,
-            'accountId':    self.accountIdLE.text(),
-            'apiKey':       self.apiKeyLE.text(),
-            'privKey':      self.privateKeyLE.text(),
-            'sandbox':      self.sandboxCB.isChecked()
-        }
-
-        # Ensure last used account is unique
-        for i in self.accountsData:
-            if i['lastUsed'] == True and i['accountId'] != data['accountId']:
-                i['lastUsed'] = False
 
         # Append new data to rest of account data
         self.accountsData.append(data)
@@ -80,15 +49,87 @@ class SetupDialog(QtWidgets.QDialog, Ui_SetupDialog):
         # Write to file
         with open('AccountData.json', 'w') as f:
             json.dump(self.accountsData, f)
-        self.close()
 
+    # Update saved account information
+    ############################################################################
+    @pyqtSlot()
+    def updateAccountInfo(self):
+        data = self.inputToJson()
+
+        # Check for valid input
+        if not self.validInput(data, True):
+            return
+
+        # Search through account data to edit
+        for i in self.accountsData:
+            if i['accountId'] == data['accountId']:
+                i['apiKey'] = data['apiKey']
+                i['privKey'] = data['privKey']
+                i['sandbox'] = data['sandbox']
+
+        # Write updates to file
+        with open('AccountData.json', 'w') as f:
+            json.dump(self.accountsData, f)
+
+    # Open the manage accounts dialog
+    ############################################################################
     @pyqtSlot()
     def openManageDialog(self):
         md = ManageDialog(self, self.accountsData)
         if md.exec_():
             self.loadAccountInfoFromFile()
 
-    # Functions
+    # Translate input data into a JSON object
+    ############################################################################
+    def inputToJson(self):
+        data = {
+            'lastUsed':     True,
+            'accountId':    self.accountIdLE.text(),
+            'apiKey':       self.apiKeyLE.text(),
+            'privKey':      self.privateKeyLE.text(),
+            'sandbox':      self.sandboxCB.isChecked()
+        }
+        return data
+
+    # Validate input, _forUpdate is flag for updating already saved account
+    ############################################################################
+    def validInput(self, _data, _forUpdate):
+        # Check for duplicates
+        if not _forUpdate:
+            for i in self.accountsData:
+                if i['accountId'] == _data['accountId']:
+                    msg = QMessageBox()
+                    msg.setText('This Account ID already exists.')
+                    msg.exec()
+                    return False
+                if i['apiKey'] == _data['apiKey']:
+                    msg = QMessageBox()
+                    msg.setText('This API key already exists.')
+                    msg.exec()
+                    return False
+                if i['privKey'] == _data['privKey']:
+                    msg = QMessageBox()
+                    msg.setText('This private key already exists.')
+                    msg.exec()
+                    return False
+
+        # Ensure account ID and API key are provided
+        if (_data['accountId'] == '' or _data['apiKey'] == ''):
+            msg = QMessageBox()
+            msg.setText('Account ID and API Key are required.')
+            msg.exec()
+            return False
+
+        # Ensure last used account is unique
+        for i in self.accountsData:
+            if i['lastUsed'] == True and i['accountId'] != _data['accountId']:
+                i['lastUsed'] = False
+
+        # Return input is valid
+        return True
+
+    # Loads account information from file
+    ############################################################################
     def loadAccountInfoFromFile(self):
         # If file doesn't exist, create one with basic info
         if not os.path.exists('AccountData.json'):
