@@ -62,49 +62,49 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     @pyqtSlot()
     def openSetupDialog(self):
         sd = SetupDialog(self)
-        sd.show()
+        sd.exec_()
 
     # Opens buy dialog
     ############################################################################
     @pyqtSlot()
     def openBuyDialog(self):
         bd = BuyDialog(self)
-        bd.show()
+        bd.exec_()
 
     # Opens sell dialog
     ############################################################################
     @pyqtSlot()
     def openSellDialog(self):
         sd = SellDialog(self)
-        sd.show()
+        sd.exec_()
 
     # Opens conditional dialog
     ############################################################################
     @pyqtSlot()
     def openConditionalDialog(self):
         cd = ConditionalDialog(self)
-        cd.show()
+        cd.exec_()
 
     # Opens dialog to generate new deposit address
     ############################################################################
     @pyqtSlot()
     def openGenDepositAddrDialog(self):
         gd = GenDepositAddrDialog(self)
-        gd.show()
+        gd.exec_()
 
     # Opens withdraw dialog
     ############################################################################
     @pyqtSlot()
     def openWithdrawToDialog(self):
         wd = WithdrawToDialog(self)
-        wd.show()
+        wd.exec_()
 
     # Opens about dialog
     ############################################################################
     @pyqtSlot()
     def openAboutDialog(self):
         ad = AboutDialog(self)
-        ad.show()
+        ad.exec_()
 
     # Toggles status bar on or off
     ############################################################################
@@ -117,7 +117,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.statusBar.show()
             self.toggleStatusBarAction.setText('Hide Statusbar')
 
-    # Checks internet connection
+    # Checks internet connection using Google IP
     ############################################################################
     @staticmethod
     def internetAvailable(arg):
