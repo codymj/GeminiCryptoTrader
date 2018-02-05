@@ -5,8 +5,7 @@
 #                                                                              #
 ################################################################################
 
-import sys, json
-import os.path
+import sys, json, os.path
 from ui_SetupDialog import Ui_SetupDialog
 from ManageDialog import ManageDialog
 from PyQt5 import uic, QtGui, QtWidgets

@@ -5,7 +5,7 @@
 #                                                                              #
 ################################################################################
 
-import sys
+import sys, json, os.path
 import icons
 import urllib
 from urllib.request import urlopen
@@ -24,10 +24,14 @@ from WithdrawToDialog import WithdrawToDialog
 from AboutDialog import AboutDialog
 
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
+    # Class data
+    apiData = {}
+
     # Initializer
     def __init__(self):
         super(MainWindow, self).__init__()
         self.initUI()
+        self.onStart()
 
     # Initialize UI
     def initUI(self):
@@ -35,16 +39,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         # Status Bar
         self.statusBar.showMessage('Gemini CryptoTrader started...', msecs=3000)
-
-        # Check internet connection
-        if self.internetAvailable(self):
-            self.connectIconPM = QPixmap(':/orange-circle.png')
-        else:
-            self.connectIconPM = QPixmap(':/red-circle.png')
-        self.connectIconLabel = QLabel(self)
-        self.connectIconLabel.setPixmap(self.connectIconPM)
-        self.statusBar.setToolTip('Green when connected to exchange')
-        self.statusBar.addPermanentWidget(self.connectIconLabel)
 
         # Connect actions
         self.setupAction.triggered.connect(self.openSetupDialog)
@@ -57,12 +51,49 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.toggleStatusBarAction.triggered.connect(self.toggleStatusBar)
         self.aboutAction.triggered.connect(self.openAboutDialog)
 
+    # Check internet connection and check for AccountData.json to import last
+    # used account information
+    ############################################################################
+    def onStart(self):
+        # Check internet connection
+        if self.internetAvailable(self):
+            self.connectIconPM = QPixmap(':/orange-circle.png')
+        else:
+            self.connectIconPM = QPixmap(':/red-circle.png')
+        self.connectIconLabel = QLabel(self)
+        self.connectIconLabel.setPixmap(self.connectIconPM)
+        self.statusBar.setToolTip('Green when connected to exchange')
+        self.statusBar.addPermanentWidget(self.connectIconLabel)
+
+        # Check for AccountData.json and run SetupDialog if not created
+        if not os.path.exists('AccountData.json'):
+            self.openSetupDialog()
+
+        # Load last used account data
+        self.loadApiData()
+
+    # Loads last used account data from Accounts.json file
+    ############################################################################
+    def loadApiData(self):
+        # Load file
+        with open('AccountData.json', 'r') as f:
+            data = json.load(f)
+
+        # Import most recently used account info and append all to temp list
+        for i in data:
+            if i['lastUsed'] == True:
+                self.apiData['accountId'] = i['accountId']
+                self.apiData['apiKey'] = i['apiKey']
+                self.apiData['privKey'] = i['privKey']
+                self.apiData['sandbox'] = i['sandbox']
+
     # Opens setup dialog
     ############################################################################
     @pyqtSlot()
     def openSetupDialog(self):
         sd = SetupDialog(self)
-        sd.exec_()
+        if sd.exec_():
+            self.loadApiData()
 
     # Opens buy dialog
     ############################################################################
