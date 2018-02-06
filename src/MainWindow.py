@@ -16,6 +16,8 @@ from PyQt5.QtGui import QPixmap
 from PyQt5.QtCore import pyqtSlot
 from ui_MainWindow import Ui_MainWindow
 from SetupDialog import SetupDialog
+from EncryptDialog import EncryptDialog
+from PasswordSetupDialog import PasswordSetupDialog
 from BuyDialog import BuyDialog
 from SellDialog import SellDialog
 from ConditionalDialog import ConditionalDialog
@@ -26,6 +28,7 @@ from AboutDialog import AboutDialog
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     # Class data
     apiData = {}
+    settings = {}
 
     # Initializer
     def __init__(self):
@@ -65,12 +68,23 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.statusBar.setToolTip('Green when connected to exchange')
         self.statusBar.addPermanentWidget(self.connectIconLabel)
 
+        # Check for Settings.json, if not created, this is the first run
+        if not os.path.exists('Settings.json'):
+            self.openEncryptDialog()
+        else:
+            self.loadSettings()
+
         # Check for AccountData.json and run SetupDialog if not created
         if not os.path.exists('AccountData.json'):
             self.openSetupDialog()
+        else:
+            self.loadApiData()
 
-        # Load last used account data
-        self.loadApiData()
+    # Loads settings
+    ############################################################################
+    def loadSettings(self):
+        with open('Settings.json', 'r') as f:
+            self.settings = json.load(f)
 
     # Loads last used account data from Accounts.json file
     ############################################################################
@@ -86,6 +100,21 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 self.apiData['apiKey'] = i['apiKey']
                 self.apiData['privKey'] = i['privKey']
                 self.apiData['sandbox'] = i['sandbox']
+
+    # Opens encryption dialog
+    ############################################################################
+    @pyqtSlot()
+    def openEncryptDialog(self):
+        ed = EncryptDialog(self)
+        if ed.exec_():
+            self.openPasswordSetupDialog()
+
+    # Opens password setup dialog
+    ############################################################################
+    @pyqtSlot()
+    def openPasswordSetupDialog(self):
+        psd = PasswordSetupDialog(self)
+        psd.exec_()
 
     # Opens setup dialog
     ############################################################################
