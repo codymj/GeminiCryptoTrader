@@ -36,8 +36,8 @@ class EncryptDialog(QtWidgets.QDialog, Ui_EncryptDialog):
         # If file doesn't exist, create one with basic info
         if not os.path.exists('Settings.json'):
             self.settings = {
-                'firstRun':   False,
-                'password':   '',
+                'encrypted':  False,
+                'password':   ''
             }
             with open('Settings.json', 'w') as f:
                     json.dump(self.settings, f)

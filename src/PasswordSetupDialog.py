@@ -54,6 +54,7 @@ class PasswordSetupDialog(QtWidgets.QDialog, Ui_PasswordSetupDialog):
         print(hashed)
         print(hashed.decode('utf-8'))
         self.settings['password'] = hashed.decode('utf-8')
+        self.settings['encrypted'] = True
         self.saveSettings()
 
     # Loads settings

@@ -15,12 +15,15 @@ from PyQt5.QtWidgets import QMessageBox
 class SetupDialog(QtWidgets.QDialog, Ui_SetupDialog):
     # Class data
     accountsData = []
+    settings = {}
 
     # Initializer
-    def __init__(self, parent):
+    def __init__(self, settings, parent):
         super(SetupDialog, self).__init__(parent)
         self.initUI()
         self.loadAccountInfoFromFile()
+        self.settings = settings
+        print(self.settings)
 
     # Initialize UI
     def initUI(self):

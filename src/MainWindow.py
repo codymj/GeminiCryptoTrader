@@ -115,12 +115,13 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def openPasswordSetupDialog(self):
         psd = PasswordSetupDialog(self)
         psd.exec_()
+        self.loadSettings()
 
     # Opens setup dialog
     ############################################################################
     @pyqtSlot()
     def openSetupDialog(self):
-        sd = SetupDialog(self)
+        sd = SetupDialog(self.settings, self)
         if sd.exec_():
             self.loadApiData()
 
