@@ -13,12 +13,14 @@ from PyQt5.QtCore import pyqtSlot
 class PasswordSetupDialog(QtWidgets.QDialog, Ui_PasswordSetupDialog):
     # Class variables
     settings = {}
+    password = ''
 
     # Initializer
     ############################################################################
-    def __init__(self, parent):
+    def __init__(self, settings, parent):
         super(PasswordSetupDialog, self).__init__(parent)
         self.initUI()
+        self.settings = settings
 
     # Initialize UI
     ############################################################################
@@ -51,10 +53,9 @@ class PasswordSetupDialog(QtWidgets.QDialog, Ui_PasswordSetupDialog):
     def setPassword(self):
         password = self.reEnterPasswordLE.text()
         hashed = bcrypt.hashpw(password.encode('utf8'), bcrypt.gensalt())
-        print(hashed)
-        print(hashed.decode('utf-8'))
         self.settings['password'] = hashed.decode('utf-8')
         self.settings['encrypted'] = True
+        self.password = password
         self.saveSettings()
 
     # Loads settings
@@ -69,4 +70,9 @@ class PasswordSetupDialog(QtWidgets.QDialog, Ui_PasswordSetupDialog):
         with open('Settings.json', 'w') as f:
             json.dump(self.settings, f)
 
-        self.close()
+        self.accept()
+
+    # Return password
+    ############################################################################
+    def getPassword(self):
+        return self.password

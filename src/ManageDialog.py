@@ -13,13 +13,13 @@ from PyQt5.QtWidgets import QListWidgetItem
 
 class ManageDialog(QtWidgets.QDialog, Ui_ManageDialog):
     # Class variables
-    accountsData = []
+    accounts = []
 
     # Initializer
-    def __init__(self, parent, _accountsData):
+    def __init__(self, parent, accounts):
         super(ManageDialog, self).__init__(parent)
         self.initUI()
-        self.accountsData = _accountsData
+        self.accounts = accounts
         self.refreshList()
 
     # Initialize UI
@@ -27,16 +27,15 @@ class ManageDialog(QtWidgets.QDialog, Ui_ManageDialog):
         self.setupUi(self)
 
         # Connect actions
-        self.okButton.clicked.connect(self.saveAccountInfoToFile)
+        self.okButton.clicked.connect(self.accept)
         self.loadButton.clicked.connect(self.loadAccount)
         self.removeButton.clicked.connect(self.removeAccount)
 
     # Saves account information to file
     ############################################################################
     @pyqtSlot()
-    def saveAccountInfoToFile(self):
-        with open('AccountData.json', 'w') as f:
-            json.dump(self.accountsData, f)
+    def getUpdatedAccounts(self):
+        return self.accounts
         self.close()
 
     # Loads account from file into the setup dialog
@@ -45,32 +44,32 @@ class ManageDialog(QtWidgets.QDialog, Ui_ManageDialog):
         idToLoad = self.accountList.currentItem().text().rstrip()
 
         # Ensure loaded account is last used
-        for i in self.accountsData:
+        for i in self.accounts:
             if i['lastUsed'] == True and i['accountId'] != idToLoad:
                 i['lastUsed'] = False
             if i['accountId'] == idToLoad:
                 i['lastUsed'] = True
 
-        # Save file and return to parent
-        self.saveAccountInfoToFile()
         self.accept()
 
     # Removes account from file
     ############################################################################
     def removeAccount(self):
         idToRemove = self.accountList.currentItem().text()
-        for i in self.accountsData:
+        for i in self.accounts:
             if idToRemove == i['accountId']:
-                self.accountsData.remove(i)
+                self.accounts.remove(i)
                 break
+
         self.refreshList()
 
     # Refreshes the account list
     ############################################################################
     def refreshList(self):
         self.accountList.clear()
-        for i in self.accountsData:
+        for i in self.accounts:
             QListWidgetItem(i['accountId'], self.accountList)
+
         self.checkEmptyList()
 
     # Checks for empty list to prevent invalid actions

@@ -5,36 +5,38 @@
 #                                                                              #
 ################################################################################
 
-import sys, json, os.path
-import icons
-import urllib
+import sys, json, os.path, icons, urllib
 from urllib.request import urlopen
 from urllib.error import URLError
 from PyQt5 import uic, QtGui, QtWidgets
-from PyQt5.QtWidgets import QLabel, QPushButton
 from PyQt5.QtGui import QPixmap
+from PyQt5.QtWidgets import QLabel, QPushButton
 from PyQt5.QtCore import pyqtSlot
 from ui_MainWindow import Ui_MainWindow
-from SetupDialog import SetupDialog
+from AccountsDialog import AccountsDialog
 from EncryptDialog import EncryptDialog
 from PasswordSetupDialog import PasswordSetupDialog
+from PasswordDialog import PasswordDialog
 from BuyDialog import BuyDialog
 from SellDialog import SellDialog
 from ConditionalDialog import ConditionalDialog
 from GenDepositAddrDialog import GenDepositAddrDialog
 from WithdrawToDialog import WithdrawToDialog
 from AboutDialog import AboutDialog
+from EncryptFiles import *
 
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     # Class data
-    apiData = {}
-    settings = {}
+    accounts = []   # List of accounts
+    account = {}    # Current account
+    settings = {}   # Loaded settings
+    password = ''   # Password in plaintext (never saved)
 
     # Initializer
     def __init__(self):
         super(MainWindow, self).__init__()
         self.initUI()
-        self.onStart()
+        self.startUp()
 
     # Initialize UI
     def initUI(self):
@@ -44,7 +46,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.statusBar.showMessage('Gemini CryptoTrader started...', msecs=3000)
 
         # Connect actions
-        self.setupAction.triggered.connect(self.openSetupDialog)
+        self.setupAction.triggered.connect(self.openAccountsDialog)
         self.buyAction.triggered.connect(self.openBuyDialog)
         self.sellAction.triggered.connect(self.openSellDialog)
         self.conditionalAction.triggered.connect(self.openConditionalDialog)
@@ -54,31 +56,31 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.toggleStatusBarAction.triggered.connect(self.toggleStatusBar)
         self.aboutAction.triggered.connect(self.openAboutDialog)
 
-    # Check internet connection and check for AccountData.json to import last
-    # used account information
+    # Run start up processes
     ############################################################################
-    def onStart(self):
+    def startUp(self):
         # Check internet connection
-        if self.internetAvailable(self):
-            self.connectIconPM = QPixmap(':/orange-circle.png')
-        else:
-            self.connectIconPM = QPixmap(':/red-circle.png')
-        self.connectIconLabel = QLabel(self)
-        self.connectIconLabel.setPixmap(self.connectIconPM)
-        self.statusBar.setToolTip('Green when connected to exchange')
-        self.statusBar.addPermanentWidget(self.connectIconLabel)
+        self.checkConnectivity(self)
 
-        # Check for Settings.json, if not created, this is the first run
-        if not os.path.exists('Settings.json'):
-            self.openEncryptDialog()
-        else:
-            self.loadSettings()
+        # Load settings
+        self.loadSettings()
 
-        # Check for AccountData.json and run SetupDialog if not created
-        if not os.path.exists('AccountData.json'):
-            self.openSetupDialog()
+        # Check if data files exist
+        if os.path.exists('Accounts.json') or os.path.exists('Accounts.enc'):
+            self.loadAccounts()
         else:
-            self.loadApiData()
+            self.openAccountsDialog()
+
+    # When user closes program, save all data & encrypt if necessary
+    ############################################################################
+    def closeEvent(self, event):
+        # Save data
+        self.statusBar.showMessage('Saving data...')
+        self.saveAccounts()
+
+        # Encrypt data
+        self.statusBar.showMessage('Encrypting data...')
+        encryptFile(self.password, 'Accounts.json')
 
     # Loads settings
     ############################################################################
@@ -86,20 +88,43 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         with open('Settings.json', 'r') as f:
             self.settings = json.load(f)
 
+        # Prompt for password if encryption is enabled
+        if self.settings['encrypted']:
+            self.openPasswordDialog()
+
     # Loads last used account data from Accounts.json file
     ############################################################################
-    def loadApiData(self):
-        # Load file
-        with open('AccountData.json', 'r') as f:
-            data = json.load(f)
+    def loadAccounts(self):
+        if self.settings['encrypted']:
+            # Decrypt file
+            self.statusBar.showMessage('Decrypting data...')
+            decryptFile(self.password, 'Accounts.enc')
+        else:
+            self.statusBar.showMessage('Loading data...')
 
-        # Import most recently used account info and append all to temp list
+        # Open file to load
+        with open('Accounts.json', 'r') as f:
+                data = json.load(f)
+
+        # Import most recently used account info and append all to accounts
+        self.accounts.clear()
         for i in data:
             if i['lastUsed'] == True:
-                self.apiData['accountId'] = i['accountId']
-                self.apiData['apiKey'] = i['apiKey']
-                self.apiData['privKey'] = i['privKey']
-                self.apiData['sandbox'] = i['sandbox']
+                self.account['accountId'] = i['accountId']
+                self.account['apiKey'] = i['apiKey']
+                self.account['privKey'] = i['privKey']
+                self.account['sandbox'] = i['sandbox']
+                self.accounts.append(i)
+            else:
+                self.accounts.append(i)
+
+        self.statusBar.showMessage('Data loaded successfully.')
+
+    # Saves accounts to file
+    ############################################################################
+    def saveAccounts(self):
+        with open('Accounts.json', 'w') as f:
+            json.dump(self.accounts, f)
 
     # Opens encryption dialog
     ############################################################################
@@ -107,23 +132,33 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def openEncryptDialog(self):
         ed = EncryptDialog(self)
         if ed.exec_():
-            self.openPasswordSetupDialog()
+            self.openPasswordAccountsDialog()
 
     # Opens password setup dialog
     ############################################################################
     @pyqtSlot()
-    def openPasswordSetupDialog(self):
-        psd = PasswordSetupDialog(self)
-        psd.exec_()
-        self.loadSettings()
+    def openPasswordAccountsDialog(self):
+        psd = PasswordAccountsDialog(self.settings, self)
+        if psd.exec_():
+            self.password = psd.getPassword()
+
+    # Opens password dialog for decryption
+    ############################################################################
+    @pyqtSlot()
+    def openPasswordDialog(self):
+        pd = PasswordDialog(self.settings['password'], self)
+        if pd.exec_():
+            self.password = pd.getPassword()
+        else:
+            sys.exit()
 
     # Opens setup dialog
     ############################################################################
     @pyqtSlot()
-    def openSetupDialog(self):
-        sd = SetupDialog(self.settings, self)
-        if sd.exec_():
-            self.loadApiData()
+    def openAccountsDialog(self):
+        ad = AccountsDialog(self, self.accounts, self.settings, self.password)
+        if ad.exec_():
+            ad.getLastUsedAccount()
 
     # Opens buy dialog
     ############################################################################
@@ -181,9 +216,22 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     # Checks internet connection using Google IP
     ############################################################################
     @staticmethod
-    def internetAvailable(arg):
+    def checkConnectivity(self):
+        connected = False
         try:
             urlopen('http://74.125.21.99', timeout=1)
-            return True
+            connected = True
         except URLError as err:
-            return False
+            connected = False
+            print(err)
+
+        # Set connectivity icon in status bar
+        if connected:
+            self.connectIconPM = QPixmap(':/orange-circle.png')
+        else:
+            self.connectIconPM = QPixmap(':/red-circle.png')
+
+        self.connectIconLabel = QLabel(self)
+        self.connectIconLabel.setPixmap(self.connectIconPM)
+        self.statusBar.setToolTip('Green when connected to exchange')
+        self.statusBar.addPermanentWidget(self.connectIconLabel)
