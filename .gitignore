@@ -36,4 +36,5 @@ src/__pycache__
 API-Documentation/*
 *.geany
 *.json
+*.enc
 notes.txt
