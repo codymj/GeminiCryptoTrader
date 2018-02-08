@@ -79,12 +79,16 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.saveAccounts()
 
         # Encrypt data
-        self.statusBar.showMessage('Encrypting data...')
-        encryptFile(self.password, 'Accounts.json')
+        if self.settings['encrypted']:
+            self.statusBar.showMessage('Encrypting data...')
+            encryptFile(self.password, 'Accounts.json')
 
     # Loads settings
     ############################################################################
     def loadSettings(self):
+        if not os.path.exists('Settings.json'):
+            self.openEncryptDialog()
+
         with open('Settings.json', 'r') as f:
             self.settings = json.load(f)
 
