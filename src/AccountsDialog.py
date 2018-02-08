@@ -11,7 +11,7 @@ from ui_AccountsDialog import Ui_AccountsDialog
 from ManageDialog import ManageDialog
 from PyQt5 import uic, QtGui, QtWidgets
 from PyQt5.QtCore import pyqtSlot
-from PyQt5.QtWidgets import QMessageBox
+from PyQt5.QtWidgets import QMessageBox, QDesktopWidget
 
 class AccountsDialog(QtWidgets.QDialog, Ui_AccountsDialog):
     # Class data
@@ -28,6 +28,7 @@ class AccountsDialog(QtWidgets.QDialog, Ui_AccountsDialog):
         self.settings = settings
         self.password = password
         self.setLastUsedAccount()
+        self.centerOnScreen()
 
     # Initialize UI
     def initUI(self):
@@ -148,3 +149,11 @@ class AccountsDialog(QtWidgets.QDialog, Ui_AccountsDialog):
     ############################################################################
     def getLastUsedAccount(self):
         return self.lastUsedAccount
+
+    # Centers dialog on the screen
+    ############################################################################
+    def centerOnScreen(self):
+        desktopSize = QDesktopWidget().screenGeometry()
+        top = (desktopSize.height() / 2) - (self.height() / 2)
+        left = (desktopSize.width() / 2) - (self.width() / 2)
+        self.move(left, top)

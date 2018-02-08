@@ -8,6 +8,7 @@
 import sys, json, os.path, bcrypt
 from ui_PasswordSetupDialog import Ui_PasswordSetupDialog
 from PyQt5 import uic, QtGui, QtWidgets
+from PyQt5.QtWidgets import QDesktopWidget
 from PyQt5.QtCore import pyqtSlot
 
 class PasswordSetupDialog(QtWidgets.QDialog, Ui_PasswordSetupDialog):
@@ -21,6 +22,7 @@ class PasswordSetupDialog(QtWidgets.QDialog, Ui_PasswordSetupDialog):
         super(PasswordSetupDialog, self).__init__(parent)
         self.initUI()
         self.settings = settings
+        self.centerOnScreen()
 
     # Initialize UI
     ############################################################################
@@ -76,3 +78,11 @@ class PasswordSetupDialog(QtWidgets.QDialog, Ui_PasswordSetupDialog):
     ############################################################################
     def getPassword(self):
         return self.password
+
+    # Centers dialog on the screen
+    ############################################################################
+    def centerOnScreen(self):
+        desktopSize = QDesktopWidget().screenGeometry()
+        top = (desktopSize.height() / 2) - (self.height() / 2)
+        left = (desktopSize.width() / 2) - (self.width() / 2)
+        self.move(left, top)

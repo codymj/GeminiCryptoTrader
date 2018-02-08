@@ -8,6 +8,7 @@
 import sys, json, os.path
 from ui_EncryptDialog import Ui_EncryptDialog
 from PyQt5 import uic, QtGui, QtWidgets
+from PyQt5.QtWidgets import QDesktopWidget
 from PyQt5.QtCore import pyqtSlot
 
 class EncryptDialog(QtWidgets.QDialog, Ui_EncryptDialog):
@@ -20,6 +21,7 @@ class EncryptDialog(QtWidgets.QDialog, Ui_EncryptDialog):
         super(EncryptDialog, self).__init__(parent)
         self.initUI()
         self.loadSettings()
+        self.centerOnScreen()
 
     # Initialize UI
     ############################################################################
@@ -48,3 +50,11 @@ class EncryptDialog(QtWidgets.QDialog, Ui_EncryptDialog):
             # Load file
             with open('Settings.json', 'r') as f:
                 self.settings = json.load(f)
+
+    # Centers dialog on the screen
+    ############################################################################
+    def centerOnScreen(self):
+        desktopSize = QDesktopWidget().screenGeometry()
+        top = (desktopSize.height() / 2) - (self.height() / 2)
+        left = (desktopSize.width() / 2) - (self.width() / 2)
+        self.move(left, top)
