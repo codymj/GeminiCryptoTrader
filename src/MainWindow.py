@@ -22,6 +22,7 @@ from SellDialog import SellDialog
 from ConditionalDialog import ConditionalDialog
 from GenDepositAddrDialog import GenDepositAddrDialog
 from WithdrawToDialog import WithdrawToDialog
+from OptionsDialog import OptionsDialog
 from AboutDialog import AboutDialog
 from EncryptFiles import *
 
@@ -53,6 +54,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.genDepositAction.triggered.connect(self.openGenDepositAddrDialog)
         self.withdrawToAction.triggered.connect(self.openWithdrawToDialog)
         self.exitAction.triggered.connect(self.close)
+        self.optionsAction.triggered.connect(self.openOptionsDialog)
         self.toggleStatusBarAction.triggered.connect(self.toggleStatusBar)
         self.aboutAction.triggered.connect(self.openAboutDialog)
 
@@ -77,6 +79,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # Save data
         self.statusBar.showMessage('Saving data...')
         self.saveAccounts()
+        self.saveSettings()
 
         # Encrypt data
         if self.settings['encrypted']:
@@ -130,21 +133,29 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         with open('Accounts.json', 'w') as f:
             json.dump(self.accounts, f)
 
+    # Saves settings to file
+    ############################################################################
+    def saveSettings(self):
+        with open('Settings.json', 'w') as f:
+            json.dump(self.settings, f)
+
     # Opens encryption dialog
     ############################################################################
     @pyqtSlot()
     def openEncryptDialog(self):
         ed = EncryptDialog(self)
         if ed.exec_():
-            self.openPasswordAccountsDialog()
+            self.openPasswordSetupDialog()
 
     # Opens password setup dialog
     ############################################################################
     @pyqtSlot()
-    def openPasswordAccountsDialog(self):
-        psd = PasswordAccountsDialog(self.settings, self)
+    def openPasswordSetupDialog(self):
+        psd = PasswordSetupDialog(self, self.settings)
         if psd.exec_():
             self.password = psd.getPassword()
+            self.settings = psd.getSettings()
+            print(self.settings)
 
     # Opens password dialog for decryption
     ############################################################################
@@ -199,6 +210,12 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def openWithdrawToDialog(self):
         wd = WithdrawToDialog(self)
         wd.exec_()
+
+    # Opens options dialog
+    ############################################################################
+    def openOptionsDialog(self):
+        od = OptionsDialog(self, self.settings)
+        od.exec_()
 
     # Opens about dialog
     ############################################################################
