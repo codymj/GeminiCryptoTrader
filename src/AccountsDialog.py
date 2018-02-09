@@ -40,10 +40,10 @@ class AccountsDialog(QtWidgets.QDialog, Ui_AccountsDialog):
         self.updateButton.clicked.connect(self.updateAccount)
         self.manageButton.clicked.connect(self.openManageDialog)
 
-    # Save account information to file
+    # Return account list
     ############################################################################
     @pyqtSlot()
-    def getCurrentAccount(self):
+    def getAccounts(self):
         return self.accounts
 
     # Adds a new account
@@ -75,7 +75,7 @@ class AccountsDialog(QtWidgets.QDialog, Ui_AccountsDialog):
     def openManageDialog(self):
         md = ManageDialog(self, self.accounts)
         if md.exec_():
-            md.getUpdatedAccounts()
+            self.accounts = md.getAccounts()
             self.setLastUsedAccount()
 
     # Translate input data into a JSON object
@@ -91,14 +91,14 @@ class AccountsDialog(QtWidgets.QDialog, Ui_AccountsDialog):
         }
 
         # Check for valid input
-        if not self.validInput(data, True):
+        if not self.validateInput(data, True):
             return
 
         return data
 
     # Validate input; forUpdate is a flag for updating already saved account
     ############################################################################
-    def validInput(self, data, forUpdate):
+    def validateInput(self, data, forUpdate):
         # Check for duplicates
         if not forUpdate:
             for i in self.accounts:
@@ -136,14 +136,21 @@ class AccountsDialog(QtWidgets.QDialog, Ui_AccountsDialog):
     # Loads account information from file
     ############################################################################
     def setLastUsedAccount(self):
-        for i in self.accounts:
-            if i['lastUsed'] == True:
-                self.accountIdLE.setText(i['accountId'])
-                self.apiKeyLE.setText(i['apiKey'])
-                self.privateKeyLE.setText(i['privKey'])
-                self.sandboxCB.setChecked(i['sandbox'])
-                self.lastUsedAccount = i
-                break
+        if not self.accounts:
+            self.accountIdLE.setText('')
+            self.apiKeyLE.setText('')
+            self.privateKeyLE.setText('')
+            self.sandboxCB.setChecked(False)
+            self.lastUsedAccount = {}
+        else:
+            for i in self.accounts:
+                if i['lastUsed'] == True:
+                    self.accountIdLE.setText(i['accountId'])
+                    self.apiKeyLE.setText(i['apiKey'])
+                    self.privateKeyLE.setText(i['privKey'])
+                    self.sandboxCB.setChecked(i['sandbox'])
+                    self.lastUsedAccount = i
+                    break
 
     # Returns last used account
     ############################################################################

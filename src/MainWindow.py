@@ -162,7 +162,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def openAccountsDialog(self):
         ad = AccountsDialog(self, self.accounts, self.settings, self.password)
         if ad.exec_():
-            ad.getLastUsedAccount()
+            self.account = ad.getLastUsedAccount()
+            self.accounts = ad.getAccounts()
 
     # Opens buy dialog
     ############################################################################

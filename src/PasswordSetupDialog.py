@@ -29,6 +29,7 @@ class PasswordSetupDialog(QtWidgets.QDialog, Ui_PasswordSetupDialog):
     def initUI(self):
         self.setupUi(self)
         self.setPasswordButton.setEnabled(False)
+        self.setPasswordButton.setDefault(True)
 
         # Connect actions
         self.setPasswordButton.clicked.connect(self.setPassword)
@@ -39,21 +40,21 @@ class PasswordSetupDialog(QtWidgets.QDialog, Ui_PasswordSetupDialog):
     ############################################################################
     @pyqtSlot()
     def checkPasswords(self):
-        firstPass = self.initialPasswordLE.text()
-        secondPass = self.reEnterPasswordLE.text()
+        firstPass = self.firstPassLE.text()
+        secondPass = self.secondPassLE.text()
 
         if firstPass != secondPass:
-            self.initialPasswordLE.setStyleSheet("QLineEdit{background: red;}");
-            self.reEnterPasswordLE.setStyleSheet("QLineEdit{background: red;}");
+            self.firstPassLE.setStyleSheet("QLineEdit{background: red;}")
+            self.secondPassLE.setStyleSheet("QLineEdit{background: red;}")
             self.setPasswordButton.setEnabled(False)
         else:
-            self.initialPasswordLE.setStyleSheet("QLineEdit{background: green;}");
-            self.reEnterPasswordLE.setStyleSheet("QLineEdit{background: green;}");
+            self.firstPassLE.setStyleSheet("QLineEdit{background: green;}")
+            self.secondPassLE.setStyleSheet("QLineEdit{background: green;}")
             self.setPasswordButton.setEnabled(True)
 
     # Saves hashed password to file
     def setPassword(self):
-        password = self.reEnterPasswordLE.text()
+        password = self.secondPassLE.text()
         hashed = bcrypt.hashpw(password.encode('utf8'), bcrypt.gensalt())
         self.settings['password'] = hashed.decode('utf-8')
         self.settings['encrypted'] = True

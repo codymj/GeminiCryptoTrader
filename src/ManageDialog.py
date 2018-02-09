@@ -34,9 +34,8 @@ class ManageDialog(QtWidgets.QDialog, Ui_ManageDialog):
     # Saves account information to file
     ############################################################################
     @pyqtSlot()
-    def getUpdatedAccounts(self):
+    def getAccounts(self):
         return self.accounts
-        self.close()
 
     # Loads account from file into the setup dialog
     ############################################################################

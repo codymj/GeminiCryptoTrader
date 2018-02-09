@@ -26,6 +26,7 @@ class PasswordDialog(QtWidgets.QDialog, Ui_PasswordDialog):
     # Initialize UI
     def initUI(self):
         self.setupUi(self)
+        self.decryptButton.setDefault(True)
 
         # Connect actions
         self.decryptButton.clicked.connect(self.checkPassword)
