@@ -116,22 +116,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         # Open file to load
         with open('Accounts.json', 'r') as f:
-                data = json.load(f)
+                accounts = json.load(f)
 
         # Import most recently used account info and append all to accounts
-        self.accounts.clear()
-        for i in data:
-            if i['lastUsed'] == True:
-                self.account['accountId'] = i['accountId']
-                self.account['isTrader'] = i['isTrader']
-                self.account['hasHeartbeat'] = i['hasHeartbeat']
-                self.account['isFundManager'] = i['isFundManager']
-                self.account['apiKey'] = i['apiKey']
-                self.account['secretKey'] = i['secretKey']
-                self.account['sandbox'] = i['sandbox']
-                self.accounts.append(i)
-            else:
-                self.accounts.append(i)
+        self.updateAccounts(accounts)
 
         self.statusBar.showMessage('Data loaded successfully.')
 
