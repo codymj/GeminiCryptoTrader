@@ -66,9 +66,11 @@ class ManageDialog(QtWidgets.QDialog, Ui_ManageDialog):
     ############################################################################
     def refreshList(self):
         self.accountList.clear()
+        if not self.accounts:
+            self.checkEmptyList()
+
         for i in self.accounts:
             QListWidgetItem(i['accountId'], self.accountList)
-
         self.checkEmptyList()
 
     # Checks for empty list to prevent invalid actions

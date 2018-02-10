@@ -120,7 +120,7 @@ class AccountsDialog(QtWidgets.QDialog, Ui_AccountsDialog):
     ############################################################################
     def validateInput(self, data, forUpdate):
         # Make sure at least one role is enabled
-        if not (self.traderCB.isChecked() and self.fundManagerCB.isChecked()):
+        if not self.traderCB.isChecked() and not self.fundManagerCB.isChecked():
             msg = QMessageBox()
             msg.setText('At least one role must be set.')
             msg.exec()
@@ -181,11 +181,6 @@ class AccountsDialog(QtWidgets.QDialog, Ui_AccountsDialog):
                     self.sandboxCB.setChecked(i['sandbox'])
                     self.lastUsedAccount = i
                     break
-
-    # Returns last used account
-    ############################################################################
-    def getLastUsedAccount(self):
-        return self.lastUsedAccount
 
     # Centers dialog on the screen
     ############################################################################

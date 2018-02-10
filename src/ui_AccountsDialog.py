@@ -110,7 +110,7 @@ class Ui_AccountsDialog(object):
         AccountsDialog.setWindowTitle(_translate("AccountsDialog", "Setup Account"))
         self.label.setText(_translate("AccountsDialog", "Account ID:"))
         self.label_2.setText(_translate("AccountsDialog", "API Key:"))
-        self.label_3.setText(_translate("AccountsDialog", "Private Key:"))
+        self.label_3.setText(_translate("AccountsDialog", "Secret Key:"))
         self.sandboxCB.setText(_translate("AccountsDialog", "Sandbox Account?"))
         self.groupBox.setTitle(_translate("AccountsDialog", "Role:"))
         self.traderCB.setText(_translate("AccountsDialog", "Trader"))

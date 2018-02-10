@@ -78,7 +78,7 @@
          <item>
           <widget class="QLabel" name="label_3">
            <property name="text">
-            <string>Private Key:</string>
+            <string>Secret Key:</string>
            </property>
           </widget>
          </item>

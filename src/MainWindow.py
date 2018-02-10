@@ -99,6 +99,11 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         if self.settings['encrypted']:
             self.openPasswordDialog()
 
+    # Updates settings
+    ############################################################################
+    def updateSettings(self, settings):
+        self.settings = settings
+
     # Loads last used account data from Accounts.json file
     ############################################################################
     def loadAccounts(self):
@@ -130,6 +135,16 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.statusBar.showMessage('Data loaded successfully.')
 
+    # Updates accounts and calls updateEnabledActions()
+    ############################################################################
+    def updateAccounts(self, accounts):
+        self.accounts = accounts
+        for i in accounts:
+            if i['lastUsed'] == True:
+                self.account = i
+
+        self.updateEnabledActions()
+
     # Saves accounts to file
     ############################################################################
     def saveAccounts(self):
@@ -141,6 +156,36 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def saveSettings(self):
         with open('Settings.json', 'w') as f:
             json.dump(self.settings, f)
+
+    # Enables/disables actions based on roles in the account
+    ############################################################################
+    def updateEnabledActions(self):
+        # No account loaded
+        if not self.account:
+            self.buyAction.setEnabled(False)
+            self.sellAction.setEnabled(False)
+            self.conditionalAction.setEnabled(False)
+            self.genDepositAction.setEnabled(False)
+            self.withdrawToAction.setEnabled(False)
+            return
+
+        # Account has trader role
+        if not self.account['isTrader']:
+            self.buyAction.setEnabled(False)
+            self.sellAction.setEnabled(False)
+            self.conditionalAction.setEnabled(False)
+        else:
+            self.buyAction.setEnabled(True)
+            self.sellAction.setEnabled(True)
+            self.conditionalAction.setEnabled(True)
+
+        # Account has fund manager role
+        if not self.account['isFundManager']:
+            self.genDepositAction.setEnabled(False)
+            self.withdrawToAction.setEnabled(False)
+        else:
+            self.genDepositAction.setEnabled(True)
+            self.withdrawToAction.setEnabled(True)
 
     # Opens encryption dialog
     ############################################################################
@@ -169,7 +214,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         psd = PasswordSetupDialog(self, self.settings)
         if psd.exec_():
             self.password = psd.getPassword()
-            self.settings = psd.getSettings()
+            self.updateSettings(psd.getSettings())
 
     # Opens password dialog for decryption
     ############################################################################
@@ -187,8 +232,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def openAccountsDialog(self):
         ad = AccountsDialog(self, self.accounts, self.settings, self.password)
         if ad.exec_():
-            self.account = ad.getLastUsedAccount()
-            self.accounts = ad.getAccounts()
+            self.updateAccounts(ad.getAccounts())
 
     # Opens buy dialog
     ############################################################################
