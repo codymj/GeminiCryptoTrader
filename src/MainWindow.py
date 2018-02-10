@@ -73,6 +73,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         else:
             self.openAccountsDialog()
 
+        # Connect to Gemini for public data retrieval
+
+
     # When user closes program, save all data & encrypt if necessary
     ############################################################################
     def closeEvent(self, event):
