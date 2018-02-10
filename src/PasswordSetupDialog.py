@@ -12,7 +12,7 @@ from PyQt5.QtWidgets import QDesktopWidget
 from PyQt5.QtCore import pyqtSlot
 
 class PasswordSetupDialog(QtWidgets.QDialog, Ui_PasswordSetupDialog):
-    # Class variables
+    # Class data
     settings = {}
     password = ''
 

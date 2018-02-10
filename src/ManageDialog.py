@@ -12,7 +12,7 @@ from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtWidgets import QListWidgetItem
 
 class ManageDialog(QtWidgets.QDialog, Ui_ManageDialog):
-    # Class variables
+    # Class data
     accounts = []
 
     # Initializer

@@ -12,7 +12,7 @@ from PyQt5.QtWidgets import QDesktopWidget
 from PyQt5.QtCore import pyqtSlot
 
 class EncryptDialog(QtWidgets.QDialog, Ui_EncryptDialog):
-    # Class variables
+    # Class data
     settings = {}
 
     # Initializer
