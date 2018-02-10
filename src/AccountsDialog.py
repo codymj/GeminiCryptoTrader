@@ -11,7 +11,7 @@ from ui_AccountsDialog import Ui_AccountsDialog
 from ManageDialog import ManageDialog
 from PyQt5 import uic, QtGui, QtWidgets
 from PyQt5.QtCore import pyqtSlot
-from PyQt5.QtWidgets import QMessageBox, QDesktopWidget
+from PyQt5.QtWidgets import QMessageBox, QDesktopWidget, QRadioButton
 
 class AccountsDialog(QtWidgets.QDialog, Ui_AccountsDialog):
     # Class data
@@ -39,6 +39,20 @@ class AccountsDialog(QtWidgets.QDialog, Ui_AccountsDialog):
         self.addButton.clicked.connect(self.addAccount)
         self.updateButton.clicked.connect(self.updateAccount)
         self.manageButton.clicked.connect(self.openManageDialog)
+        self.traderCB.toggled.connect(self.traderCBToggled)
+
+        # Set trader role as default
+        self.traderCB.setChecked(True)
+
+    # Trader check box toggled, enable heartbeat option
+    ############################################################################
+    @pyqtSlot()
+    def traderCBToggled(self):
+        if self.traderCB.isChecked():
+            self.heartbeatCB.setEnabled(True)
+        else:
+            self.heartbeatCB.setChecked(False)
+            self.heartbeatCB.setEnabled(False)
 
     # Return account list
     ############################################################################
@@ -61,8 +75,11 @@ class AccountsDialog(QtWidgets.QDialog, Ui_AccountsDialog):
         # Search through account data to edit
         for i in self.accounts:
             if i['accountId'] == data['accountId']:
+                i['isTrader'] == data['isTrader']
+                i['hasHeartbeat'] == data['hasHeartbeat']
+                i['isFundManager'] == data['isFundManager']
                 i['apiKey'] = data['apiKey']
-                i['privKey'] = data['privKey']
+                i['secretKey'] = data['secretKey']
                 i['sandbox'] = data['sandbox']
 
         # Write updates to file
@@ -83,11 +100,14 @@ class AccountsDialog(QtWidgets.QDialog, Ui_AccountsDialog):
     def toJson(self):
         # Get data from input
         data = {
-            'lastUsed':     True,
-            'accountId':    self.accountIdLE.text(),
-            'apiKey':       self.apiKeyLE.text(),
-            'privKey':      self.privateKeyLE.text(),
-            'sandbox':      self.sandboxCB.isChecked()
+            'lastUsed':         True,
+            'isTrader':         self.traderCB.isChecked(),
+            'hasHeartbeat':     self.heartbeatCB.isChecked(),
+            'isFundManager':    self.fundManagerCB.isChecked(),
+            'accountId':        self.accountIdLE.text(),
+            'apiKey':           self.apiKeyLE.text(),
+            'secretKey':        self.secretKeyLE.text(),
+            'sandbox':          self.sandboxCB.isChecked()
         }
 
         # Check for valid input
@@ -99,6 +119,13 @@ class AccountsDialog(QtWidgets.QDialog, Ui_AccountsDialog):
     # Validate input; forUpdate is a flag for updating already saved account
     ############################################################################
     def validateInput(self, data, forUpdate):
+        # Make sure at least one role is enabled
+        if not (self.traderCB.isChecked() and self.fundManagerCB.isChecked()):
+            msg = QMessageBox()
+            msg.setText('At least one role must be set.')
+            msg.exec()
+            return False
+
         # Check for duplicates
         if not forUpdate:
             for i in self.accounts:
@@ -112,9 +139,9 @@ class AccountsDialog(QtWidgets.QDialog, Ui_AccountsDialog):
                     msg.setText('This API key already exists.')
                     msg.exec()
                     return False
-                if i['privKey'] == data['privKey']:
+                if i['secretKey'] == data['secretKey']:
                     msg = QMessageBox()
-                    msg.setText('This private key already exists.')
+                    msg.setText('This secret key already exists.')
                     msg.exec()
                     return False
 
@@ -139,15 +166,18 @@ class AccountsDialog(QtWidgets.QDialog, Ui_AccountsDialog):
         if not self.accounts:
             self.accountIdLE.setText('')
             self.apiKeyLE.setText('')
-            self.privateKeyLE.setText('')
+            self.secretKeyLE.setText('')
             self.sandboxCB.setChecked(False)
             self.lastUsedAccount = {}
         else:
             for i in self.accounts:
                 if i['lastUsed'] == True:
                     self.accountIdLE.setText(i['accountId'])
+                    self.traderCB.setChecked(i['isTrader'])
+                    self.heartbeatCB.setChecked(i['hasHeartbeat'])
+                    self.fundManagerCB.setChecked(i['isFundManager'])
                     self.apiKeyLE.setText(i['apiKey'])
-                    self.privateKeyLE.setText(i['privKey'])
+                    self.secretKeyLE.setText(i['secretKey'])
                     self.sandboxCB.setChecked(i['sandbox'])
                     self.lastUsedAccount = i
                     break

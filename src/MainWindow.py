@@ -10,7 +10,7 @@ from urllib.request import urlopen
 from urllib.error import URLError
 from PyQt5 import uic, QtGui, QtWidgets
 from PyQt5.QtGui import QPixmap
-from PyQt5.QtWidgets import QLabel, QPushButton
+from PyQt5.QtWidgets import QLabel, QPushButton, QMessageBox
 from PyQt5.QtCore import pyqtSlot
 from ui_MainWindow import Ui_MainWindow
 from AccountsDialog import AccountsDialog
@@ -118,8 +118,11 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         for i in data:
             if i['lastUsed'] == True:
                 self.account['accountId'] = i['accountId']
+                self.account['isTrader'] = i['isTrader']
+                self.account['hasHeartbeat'] = i['hasHeartbeat']
+                self.account['isFundManager'] = i['isFundManager']
                 self.account['apiKey'] = i['apiKey']
-                self.account['privKey'] = i['privKey']
+                self.account['secretKey'] = i['secretKey']
                 self.account['sandbox'] = i['sandbox']
                 self.accounts.append(i)
             else:
@@ -143,9 +146,21 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     ############################################################################
     @pyqtSlot()
     def openEncryptDialog(self):
-        ed = EncryptDialog(self)
-        if ed.exec_():
-            self.openPasswordSetupDialog()
+        if not self.settings:
+            ed = EncryptDialog(self)
+            if ed.exec_():
+                self.openPasswordSetupDialog()
+            else:
+                self.openAccountsDialog()
+        elif self.settings['encrypted']:
+            msg = QMessageBox()
+            msg.setText('Your files are already encrypted.')
+            msg.exec()
+            return
+        else:
+            ed = EncryptDialog(self)
+            if ed.exec_():
+                self.openPasswordSetupDialog()
 
     # Opens password setup dialog
     ############################################################################
@@ -155,7 +170,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         if psd.exec_():
             self.password = psd.getPassword()
             self.settings = psd.getSettings()
-            print(self.settings)
 
     # Opens password dialog for decryption
     ############################################################################
