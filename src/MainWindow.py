@@ -5,7 +5,7 @@
 #                                                                              #
 ################################################################################
 
-import sys, json, os.path, icons, urllib
+import sys, json, os.path, icons, urllib, time, threading
 from urllib.request import urlopen
 from urllib.error import URLError
 from PyQt5 import uic, QtGui, QtWidgets
@@ -25,13 +25,17 @@ from WithdrawToDialog import WithdrawToDialog
 from OptionsDialog import OptionsDialog
 from AboutDialog import AboutDialog
 from EncryptFiles import *
+from GeminiPublicAPI import MarketData
 
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     # Class data
-    accounts = []   # List of accounts
-    account = {}    # Current account
-    settings = {}   # Loaded settings
-    password = ''   # Password in plaintext (never saved)
+    accounts = []           # List of accounts
+    account = {}            # Current account
+    settings = {}           # Loaded settings
+    password = ''           # Password in plaintext (never saved)
+    hasConnection = False   # Internet connection detected
+    marketData = None       # MarketData object
+    marketDataThread = None # Thread for updating marketData
 
     # Initializer
     def __init__(self):
@@ -39,12 +43,15 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.initUI()
         self.startUp()
 
+        # Start threads
+        self.marketDataThread.start()
+
     # Initialize UI
     def initUI(self):
         self.setupUi(self)
 
         # Status Bar
-        self.statusBar.showMessage('Gemini CryptoTrader started...', msecs=3000)
+        self.statusBar.showMessage('Gemini CryptoTrader started...')
 
         # Connect actions
         self.setupAction.triggered.connect(self.openAccountsDialog)
@@ -61,9 +68,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     # Run start up processes
     ############################################################################
     def startUp(self):
-        # Check internet connection
-        self.checkConnectivity(self)
-
         # Load settings
         self.loadSettings()
 
@@ -73,8 +77,17 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         else:
             self.openAccountsDialog()
 
-        # Connect to Gemini for public data retrieval
+        # Check internet connection & get market data if possible
+        if self.internetUp(self):
+            self.hasConnection = True
+            self.marketData = MarketData(self.account)
+        else:
+            self.hasConnection = False
+            self.statusBar.showMessage('No internet connection detected.')
 
+        # Build threads
+        self.marketDataThread = threading.Thread(target=self.marketDataLoop, args=())
+        self.marketDataThread.daemon = True
 
     # When user closes program, save all data & encrypt if necessary
     ############################################################################
@@ -287,7 +300,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     # Checks internet connection using Google IP
     ############################################################################
     @staticmethod
-    def checkConnectivity(self):
+    def internetUp(self):
         connected = False
         try:
             urlopen('http://74.125.21.99', timeout=1)
@@ -306,3 +319,24 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.connectIconLabel.setPixmap(self.connectIconPM)
         self.statusBar.setToolTip('Green when connected to exchange')
         self.statusBar.addPermanentWidget(self.connectIconLabel)
+
+        return connected
+
+    # Gets public market data from Gemini
+    ############################################################################
+    def marketDataLoop(self):
+        while True:
+            # Update market data
+            self.marketData.updateTickers()
+
+            # Update the dashboard
+            self.updateDashboard()
+
+            # Wait
+            time.sleep(5)
+
+    # Updates dashboard with market data
+    ############################################################################
+    def updateDashboard(self):
+        self.btcLastPriceLabel.setText('$'+self.marketData.tickers[0]['last'])
+        self.ethLastPriceLabel.setText('$'+self.marketData.tickers[1]['last'])

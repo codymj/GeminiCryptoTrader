@@ -80,7 +80,7 @@ class AccountsDialog(QtWidgets.QDialog, Ui_AccountsDialog):
                 i['isFundManager'] == data['isFundManager']
                 i['apiKey'] = data['apiKey']
                 i['secretKey'] = data['secretKey']
-                i['sandbox'] = data['sandbox']
+                i['isSandbox'] = data['isSandbox']
 
         # Write updates to file
         with open('Accounts.json', 'w') as f:
@@ -107,7 +107,7 @@ class AccountsDialog(QtWidgets.QDialog, Ui_AccountsDialog):
             'accountId':        self.accountIdLE.text(),
             'apiKey':           self.apiKeyLE.text(),
             'secretKey':        self.secretKeyLE.text(),
-            'sandbox':          self.sandboxCB.isChecked()
+            'isSandbox':        self.sandboxCB.isChecked()
         }
 
         # Check for valid input
@@ -146,11 +146,11 @@ class AccountsDialog(QtWidgets.QDialog, Ui_AccountsDialog):
                     return False
 
         # Ensure account ID and API key are provided
-        if (data['accountId'] == '' or data['apiKey'] == ''):
-            msg = QMessageBox()
-            msg.setText('Account ID and API Key are required.')
-            msg.exec()
-            return False
+        #if (data['accountId'] == '' or data['apiKey'] == ''):
+        #    msg = QMessageBox()
+        #    msg.setText('Account ID and API Key are required.')
+        #    msg.exec()
+        #    return False
 
         # Ensure last used account is unique
         for i in self.accounts:
@@ -168,7 +168,8 @@ class AccountsDialog(QtWidgets.QDialog, Ui_AccountsDialog):
             self.apiKeyLE.setText('')
             self.secretKeyLE.setText('')
             self.sandboxCB.setChecked(False)
-            self.lastUsedAccount = {}
+            self.lastUsedAccount = self.toJson()
+            self.accounts.append(self.lastUsedAccount)
         else:
             for i in self.accounts:
                 if i['lastUsed'] == True:
@@ -178,7 +179,7 @@ class AccountsDialog(QtWidgets.QDialog, Ui_AccountsDialog):
                     self.fundManagerCB.setChecked(i['isFundManager'])
                     self.apiKeyLE.setText(i['apiKey'])
                     self.secretKeyLE.setText(i['secretKey'])
-                    self.sandboxCB.setChecked(i['sandbox'])
+                    self.sandboxCB.setChecked(i['isSandbox'])
                     self.lastUsedAccount = i
                     break
 
