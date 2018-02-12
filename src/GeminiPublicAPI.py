@@ -7,7 +7,7 @@
 
 # https://docs.gemini.com/websocket-api/#market-data
 
-import json, datetime, websocket, urllib
+import json, datetime, urllib
 from urllib.request import urlopen
 
 class MarketData:
