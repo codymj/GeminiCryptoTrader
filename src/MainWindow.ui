@@ -449,7 +449,7 @@
      <string>&amp;View</string>
     </property>
     <addaction name="toggleStatusBarAction"/>
-    <addaction name="showOrderbookAction"/>
+    <addaction name="showOrderBookAction"/>
    </widget>
    <widget class="QMenu" name="helpMenu">
     <property name="title">
@@ -521,7 +521,7 @@
     <string>&amp;Hide Statusbar</string>
    </property>
   </action>
-  <action name="showOrderbookAction">
+  <action name="showOrderBookAction">
    <property name="text">
     <string>&amp;Show Orderbook</string>
    </property>

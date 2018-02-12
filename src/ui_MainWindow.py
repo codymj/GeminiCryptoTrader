@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'src/MainWindow.ui'
+# Form implementation generated from reading ui file 'MainWindow.ui'
 #
-# Created by: PyQt5 UI code generator 5.9.2
+# Created by: PyQt5 UI code generator 5.10
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -264,8 +264,8 @@ class Ui_MainWindow(object):
         self.notificationsAction.setObjectName("notificationsAction")
         self.toggleStatusBarAction = QtWidgets.QAction(MainWindow)
         self.toggleStatusBarAction.setObjectName("toggleStatusBarAction")
-        self.showOrderbookAction = QtWidgets.QAction(MainWindow)
-        self.showOrderbookAction.setObjectName("showOrderbookAction")
+        self.showOrderBookAction = QtWidgets.QAction(MainWindow)
+        self.showOrderBookAction.setObjectName("showOrderBookAction")
         self.aboutAction = QtWidgets.QAction(MainWindow)
         self.aboutAction.setObjectName("aboutAction")
         self.action_Visit_Gemini_API_Docs = QtWidgets.QAction(MainWindow)
@@ -286,7 +286,7 @@ class Ui_MainWindow(object):
         self.editMenu.addSeparator()
         self.editMenu.addAction(self.notificationsAction)
         self.viewMenu.addAction(self.toggleStatusBarAction)
-        self.viewMenu.addAction(self.showOrderbookAction)
+        self.viewMenu.addAction(self.showOrderBookAction)
         self.helpMenu.addAction(self.aboutAction)
         self.helpMenu.addSeparator()
         self.helpMenu.addAction(self.action_Visit_Gemini_API_Docs)
@@ -353,7 +353,7 @@ class Ui_MainWindow(object):
         self.optionsAction.setText(_translate("MainWindow", "&Options"))
         self.notificationsAction.setText(_translate("MainWindow", "&Notifications"))
         self.toggleStatusBarAction.setText(_translate("MainWindow", "&Hide Statusbar"))
-        self.showOrderbookAction.setText(_translate("MainWindow", "&Show Orderbook"))
+        self.showOrderBookAction.setText(_translate("MainWindow", "&Show Orderbook"))
         self.aboutAction.setText(_translate("MainWindow", "&About"))
         self.action_Visit_Gemini_API_Docs.setText(_translate("MainWindow", "&Visit Gemini API Docs"))
         self.action_Gemini_Exchange.setText(_translate("MainWindow", "Visit &Gemini Exchange"))

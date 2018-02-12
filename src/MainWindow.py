@@ -23,6 +23,7 @@ from ConditionalDialog import ConditionalDialog
 from GenDepositAddrDialog import GenDepositAddrDialog
 from WithdrawToDialog import WithdrawToDialog
 from OptionsDialog import OptionsDialog
+from OrderBookDialog import OrderBookDialog
 from AboutDialog import AboutDialog
 from EncryptFiles import *
 from GeminiPublicAPI import MarketData
@@ -63,6 +64,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.exitAction.triggered.connect(self.close)
         self.optionsAction.triggered.connect(self.openOptionsDialog)
         self.toggleStatusBarAction.triggered.connect(self.toggleStatusBar)
+        self.showOrderBookAction.triggered.connect(self.openOrderBookDialog)
         self.aboutAction.triggered.connect(self.openAboutDialog)
 
     # Run start up processes
@@ -285,6 +287,13 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def openAboutDialog(self):
         ad = AboutDialog(self)
         ad.exec_()
+
+    # Opens the order book
+    ############################################################################
+    @pyqtSlot()
+    def openOrderBookDialog(self):
+        obd = OrderBookDialog(self)
+        obd.exec_()
 
     # Toggles status bar on or off
     ############################################################################
