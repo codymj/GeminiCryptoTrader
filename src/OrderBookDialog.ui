@@ -54,9 +54,6 @@
            <property name="alternatingRowColors">
             <bool>true</bool>
            </property>
-           <property name="viewMode">
-            <enum>QListView::ListMode</enum>
-           </property>
           </widget>
          </item>
         </layout>
@@ -68,6 +65,14 @@
         <layout class="QGridLayout" name="gridLayout_3">
          <item row="0" column="0">
           <widget class="QListView" name="ethusdListView">
+           <property name="font">
+            <font>
+             <family>DejaVu Sans Mono</family>
+            </font>
+           </property>
+           <property name="editTriggers">
+            <set>QAbstractItemView::NoEditTriggers</set>
+           </property>
            <property name="dragDropOverwriteMode">
             <bool>false</bool>
            </property>
@@ -85,6 +90,14 @@
         <layout class="QGridLayout" name="gridLayout_4">
          <item row="0" column="0">
           <widget class="QListView" name="ethbtcListView">
+           <property name="font">
+            <font>
+             <family>DejaVu Sans Mono</family>
+            </font>
+           </property>
+           <property name="editTriggers">
+            <set>QAbstractItemView::NoEditTriggers</set>
+           </property>
            <property name="dragDropOverwriteMode">
             <bool>false</bool>
            </property>
