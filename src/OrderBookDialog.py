@@ -27,7 +27,13 @@ class OrderBookDialog(QtWidgets.QDialog, Ui_OrderBookDialog):
     btcusdModelIndex = None # Model index for centering data around spread
     btcusdList = []         # String list for model
     ethusdItems = []        # List of btcusd items parsed for table
+    ethusdModel = None      # Model for displaying ethusd data
+    ethusdModelIndex = None # Model index for centering data around spread
+    ethusdList = []         # String list for mode
     ethbtcItems = []        # List of ethusd items parsed for table
+    ethbtcModel = None      # Model for displaying ethbtc data
+    ethbtcModelIndex = None # Model index for centering data around spread
+    ethbtcList = []         # String list for mode
 
     # Initializer
     def __init__(self, parent):
@@ -42,6 +48,12 @@ class OrderBookDialog(QtWidgets.QDialog, Ui_OrderBookDialog):
         self.btcusdModel = QStandardItemModel(self.btcusdListView)
         self.btcusdModelIndex = QModelIndex()
         self.btcusdListView.setModel(self.btcusdModel)
+        self.ethusdModel = QStandardItemModel(self.ethusdListView)
+        self.ethusdModelIndex = QModelIndex()
+        self.ethusdListView.setModel(self.ethusdModel)
+        self.ethbtcModel = QStandardItemModel(self.ethbtcListView)
+        self.ethbtcModelIndex = QModelIndex()
+        self.ethbtcListView.setModel(self.ethbtcModel)
 
         # Connect actions
         self.updateButton.clicked.connect(self.doUpdate)
@@ -98,9 +110,13 @@ class OrderBookDialog(QtWidgets.QDialog, Ui_OrderBookDialog):
             self.updateButton.setText('Updating...')
             self.btcusdGetData()
         elif self.orderBookTabs.currentIndex() == 1:
-            return
+            self.updateButton.setEnabled(False)
+            self.updateButton.setText('Updating...')
+            self.ethusdGetData()
         else:
-            return
+            self.updateButton.setEnabled(False)
+            self.updateButton.setText('Updating...')
+            self.ethbtcGetData()
 
     # Data loop for getting btcusd data
     ############################################################################
@@ -144,10 +160,30 @@ class OrderBookDialog(QtWidgets.QDialog, Ui_OrderBookDialog):
                     self.btcusdItems.append(event)
         # ETHUSD
         elif self.orderBookTabs.currentIndex() == 1:
-            return
+            # If no data, return
+            if not self.ethusdData:
+                return
+            # Clear items for update
+            self.ethusdItems.clear()
+            # If data received is an update
+            if self.ethusdData.get('type') == 'update':
+                # Loop through new event data
+                for event in self.ethusdData.get('events'):
+                    # Parse new events
+                    self.ethusdItems.append(event)
         # ETHBTC
         else:
-            return
+            # If no data, return
+            if not self.ethbtcData:
+                return
+            # Clear items for update
+            self.ethbtcItems.clear()
+            # If data received is an update
+            if self.ethbtcData.get('type') == 'update':
+                # Loop through new event data
+                for event in self.ethbtcData.get('events'):
+                    # Parse new events
+                    self.ethbtcItems.append(event)
 
     # Return list of 'ask' items
     ############################################################################
@@ -168,14 +204,38 @@ class OrderBookDialog(QtWidgets.QDialog, Ui_OrderBookDialog):
             # Sort
             askItems.sort(key=lambda k: float(k.get('price')))
             bidItems.sort(key=lambda k: float(k.get('price')), reverse=True)
-            # Return
-            return askItems, bidItems
-            # ETHUSD
+        # ETHUSD
         elif self.orderBookTabs.currentIndex() == 1:
-            return
+            # Separate
+            for item in self.ethusdItems:
+                if item.get('side') == 'ask':
+                    askItems.append(item)
+                elif item.get('side') == 'bid':
+                    bidItems.append(item)
+                else:
+                    continue
+            # Sort
+            askItems.sort(key=lambda k: float(k.get('price')))
+            bidItems.sort(key=lambda k: float(k.get('price')), reverse=True)
         # ETHBTC
         else:
-            return
+            # Separate
+            for item in self.ethbtcItems:
+                if item.get('side') == 'ask':
+                    askItems.append(item)
+                elif item.get('side') == 'bid':
+                    bidItems.append(item)
+                else:
+                    continue
+            # Sort
+            askItems.sort(key=lambda k: float(k.get('price')))
+            bidItems.sort(key=lambda k: float(k.get('price')), reverse=True)
+            for item in askItems:
+                item['price'] = str("%.6f" % float(item['price']))
+            for item in bidItems:
+                item['price'] = str("%.6f" % float(item['price']))
+
+        return askItems, bidItems
 
     # Calculates table cutoff values
     ############################################################################
@@ -222,7 +282,7 @@ class OrderBookDialog(QtWidgets.QDialog, Ui_OrderBookDialog):
         priceStr = json.get('price')
         remainStr = json.get('remaining')
 
-        width = 15
+        width = 20
         priceStr = "{0:<{1}}".format(priceStr[:width], width)
         priceStr.ljust(width)
         remainStr = "{0:<{1}}".format(remainStr[:width], width)
@@ -231,13 +291,13 @@ class OrderBookDialog(QtWidgets.QDialog, Ui_OrderBookDialog):
         item = QStandardItem()
         s = priceStr + remainStr
         item.setText(s)
+
         return item
 
     # Update the order book depending on which tab is currently viewed
     ############################################################################
     def updateOrderBook(self, tupledItems):
         cutoff = 50
-        self.btcusdModelIndex = self.btcusdModel.createIndex(cutoff + 1, 0)
         askItems, askCutoffItems, bidItems, bidCutoffItems, spread = tupledItems
 
         # Generate ask cutoff JSON object
@@ -252,12 +312,13 @@ class OrderBookDialog(QtWidgets.QDialog, Ui_OrderBookDialog):
             bidCutoffSum = bidCutoffSum + float(item.get('remaining'))
         bidCutoffJson = {'price': '<' + bidItems[-1].get('price'),
                          'remaining': str(bidCutoffSum)}
-        # Generate spread JSON object
-        spreadJson = {'price': str("%.2f" % round(spread, 2)),
-                      'remaining': 'SPREAD'}
 
         # BTCUSD
         if self.orderBookTabs.currentIndex() == 0:
+            self.btcusdModelIndex = self.btcusdModel.createIndex(cutoff + 1, 0)
+            # Generate spread JSON object
+            spreadJson = {'price': str("%.2f" % spread),
+                          'remaining': 'SPREAD'}
             # Clear model's string list
             self.btcusdModel.clear()
             # Insert ask cutoff items
@@ -279,7 +340,51 @@ class OrderBookDialog(QtWidgets.QDialog, Ui_OrderBookDialog):
             self.updateButton.setEnabled(True)
         # ETHUSD
         elif self.orderBookTabs.currentIndex() == 1:
-            return
+            self.ethusdModelIndex = self.ethusdModel.createIndex(cutoff + 1, 0)
+            # Generate spread JSON object
+            spreadJson = {'price': str("%.2f" % spread),
+                          'remaining': 'SPREAD'}
+            # Clear model's string list
+            self.ethusdModel.clear()
+            # Insert ask cutoff items
+            self.ethusdModel.appendRow(self.formatItem(askCutoffJson))
+            # Insert ask items
+            for item in askItems:
+                self.ethusdModel.appendRow(self.formatItem(item))
+            # Insert spread item
+            self.ethusdModel.appendRow(self.formatItem(spreadJson))
+            # Insert bid items
+            for item in bidItems:
+                self.ethusdModel.appendRow(self.formatItem(item))
+            # Insert bid cutoff item
+            self.ethusdModel.appendRow(self.formatItem(bidCutoffJson))
+            # Scroll to spread
+            self.ethusdListView.setCurrentIndex(self.ethusdModelIndex)
+            self.ethusdListView.scrollTo(self.ethusdModelIndex, 3)
+            self.updateButton.setText('&Update')
+            self.updateButton.setEnabled(True)
         # ETHBTC
         else:
-            return
+            self.ethbtcModelIndex = self.ethbtcModel.createIndex(cutoff + 1, 0)
+            # Generate spread JSON object
+            spreadJson = {'price': str("%.6f" % spread),
+                          'remaining': 'SPREAD'}
+            # Clear model's string list
+            self.ethbtcModel.clear()
+            # Insert ask cutoff items
+            self.ethbtcModel.appendRow(self.formatItem(askCutoffJson))
+            # Insert ask items
+            for item in askItems:
+                self.ethbtcModel.appendRow(self.formatItem(item))
+            # Insert spread item
+            self.ethbtcModel.appendRow(self.formatItem(spreadJson))
+            # Insert bid items
+            for item in bidItems:
+                self.ethbtcModel.appendRow(self.formatItem(item))
+            # Insert bid cutoff item
+            self.ethbtcModel.appendRow(self.formatItem(bidCutoffJson))
+            # Scroll to spread
+            self.ethbtcListView.setCurrentIndex(self.ethbtcModelIndex)
+            self.ethbtcListView.scrollTo(self.ethbtcModelIndex, 3)
+            self.updateButton.setText('&Update')
+            self.updateButton.setEnabled(True)
