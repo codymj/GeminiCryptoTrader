@@ -65,7 +65,7 @@
               <item row="0" column="1">
                <widget class="QLabel" name="btcLastPriceLabel">
                 <property name="text">
-                 <string>TextLabel</string>
+                 <string/>
                 </property>
                </widget>
               </item>
@@ -79,7 +79,7 @@
               <item row="1" column="1">
                <widget class="QLabel" name="btcDeltaLabel">
                 <property name="text">
-                 <string>TextLabel</string>
+                 <string/>
                 </property>
                </widget>
               </item>
@@ -93,7 +93,7 @@
               <item row="2" column="1">
                <widget class="QLabel" name="btcRangeLabel">
                 <property name="text">
-                 <string>TextLabel</string>
+                 <string/>
                 </property>
                </widget>
               </item>
@@ -218,7 +218,7 @@
              <item row="0" column="1">
               <widget class="QLabel" name="accountBalanceLabel">
                <property name="text">
-                <string>TextLabel</string>
+                <string/>
                </property>
               </widget>
              </item>
@@ -238,14 +238,14 @@
              <item row="1" column="1">
               <widget class="QLabel" name="btcBalanceLabel">
                <property name="text">
-                <string>TextLabel</string>
+                <string/>
                </property>
               </widget>
              </item>
              <item row="2" column="1">
               <widget class="QLabel" name="ethBalanceLabel">
                <property name="text">
-                <string>TextLabel</string>
+                <string/>
                </property>
               </widget>
              </item>
@@ -280,7 +280,7 @@
              <item row="0" column="1">
               <widget class="QLabel" name="usdAvailableLabel">
                <property name="text">
-                <string>TextLabel</string>
+                <string/>
                </property>
               </widget>
              </item>
@@ -300,7 +300,7 @@
              <item row="1" column="1">
               <widget class="QLabel" name="btcAvailableLabel">
                <property name="text">
-                <string>TextLabel</string>
+                <string/>
                </property>
               </widget>
              </item>
@@ -333,7 +333,7 @@
              <item row="2" column="1">
               <widget class="QLabel" name="ethAvailableLabel">
                <property name="text">
-                <string>TextLabel</string>
+                <string/>
                </property>
               </widget>
              </item>
