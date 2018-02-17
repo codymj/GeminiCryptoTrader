@@ -42,7 +42,7 @@
           <widget class="QListView" name="btcusdListView">
            <property name="font">
             <font>
-             <family>DejaVu Sans Mono</family>
+             <family>Monospace</family>
             </font>
            </property>
            <property name="editTriggers">
@@ -67,7 +67,7 @@
           <widget class="QListView" name="ethusdListView">
            <property name="font">
             <font>
-             <family>DejaVu Sans Mono</family>
+             <family>Monospace</family>
             </font>
            </property>
            <property name="editTriggers">
@@ -92,7 +92,7 @@
           <widget class="QListView" name="ethbtcListView">
            <property name="font">
             <font>
-             <family>DejaVu Sans Mono</family>
+             <family>Monospace</family>
             </font>
            </property>
            <property name="editTriggers">
