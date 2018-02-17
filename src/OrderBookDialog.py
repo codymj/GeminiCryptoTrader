@@ -9,7 +9,7 @@ import sys, json, websocket, threading, time, asyncio, itertools
 from websocket import create_connection
 from ui_OrderBookDialog import Ui_OrderBookDialog
 from PyQt5 import uic, QtGui, QtWidgets
-from PyQt5.QtGui import QStandardItemModel, QStandardItem
+from PyQt5.QtGui import QStandardItemModel, QStandardItem, QFontDatabase
 from PyQt5.QtWidgets import QListView
 from PyQt5.QtCore import pyqtSlot, QModelIndex
 
@@ -54,6 +54,12 @@ class OrderBookDialog(QtWidgets.QDialog, Ui_OrderBookDialog):
         self.ethbtcModel = QStandardItemModel(self.ethbtcListView)
         self.ethbtcModelIndex = QModelIndex()
         self.ethbtcListView.setModel(self.ethbtcModel)
+
+        # Set fixed-width font
+        fixedFont = QFontDatabase.systemFont(1)
+        self.btcusdListView.setFont(fixedFont)
+        self.ethusdListView.setFont(fixedFont)
+        self.ethbtcListView.setFont(fixedFont)
 
         # Connect actions
         self.updateButton.clicked.connect(self.doUpdate)
