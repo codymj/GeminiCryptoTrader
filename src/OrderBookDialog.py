@@ -201,9 +201,11 @@ class OrderBookDialog(QtWidgets.QDialog, Ui_OrderBookDialog):
                     bidItems.append(item)
                 else:
                     continue
-            # Sort
-            askItems.sort(key=lambda k: float(k.get('price')))
-            bidItems.sort(key=lambda k: float(k.get('price')), reverse=True)
+            # Adjust trailing decimal
+            for item in askItems:
+                item['remaining'] = str("%.8f" % float(item['remaining']))
+            for item in bidItems:
+                item['remaining'] = str("%.8f" % float(item['remaining']))
         # ETHUSD
         elif self.orderBookTabs.currentIndex() == 1:
             # Separate
@@ -214,9 +216,11 @@ class OrderBookDialog(QtWidgets.QDialog, Ui_OrderBookDialog):
                     bidItems.append(item)
                 else:
                     continue
-            # Sort
-            askItems.sort(key=lambda k: float(k.get('price')))
-            bidItems.sort(key=lambda k: float(k.get('price')), reverse=True)
+            # Adjust trailing decimal
+            for item in askItems:
+                item['remaining'] = str("%.8f" % float(item['remaining']))
+            for item in bidItems:
+                item['remaining'] = str("%.8f" % float(item['remaining']))
         # ETHBTC
         else:
             # Separate
@@ -227,13 +231,17 @@ class OrderBookDialog(QtWidgets.QDialog, Ui_OrderBookDialog):
                     bidItems.append(item)
                 else:
                     continue
-            # Sort
-            askItems.sort(key=lambda k: float(k.get('price')))
-            bidItems.sort(key=lambda k: float(k.get('price')), reverse=True)
+            # Adjust trailing decimal
             for item in askItems:
-                item['price'] = str("%.6f" % float(item['price']))
+                item['price'] = str("%.8f" % float(item['price']))
+                item['remaining'] = str("%.8f" % float(item['remaining']))
             for item in bidItems:
-                item['price'] = str("%.6f" % float(item['price']))
+                item['price'] = str("%.8f" % float(item['price']))
+                item['remaining'] = str("%.8f" % float(item['remaining']))
+
+        # Sort
+        askItems.sort(key=lambda k: float(k.get('price')))
+        bidItems.sort(key=lambda k: float(k.get('price')), reverse=True)
 
         return askItems, bidItems
 
@@ -282,7 +290,7 @@ class OrderBookDialog(QtWidgets.QDialog, Ui_OrderBookDialog):
         priceStr = json.get('price')
         remainStr = json.get('remaining')
 
-        width = 20
+        width = 15
         priceStr = "{0:<{1}}".format(priceStr[:width], width)
         priceStr.ljust(width)
         remainStr = "{0:<{1}}".format(remainStr[:width], width)
@@ -367,7 +375,7 @@ class OrderBookDialog(QtWidgets.QDialog, Ui_OrderBookDialog):
         else:
             self.ethbtcModelIndex = self.ethbtcModel.createIndex(cutoff + 1, 0)
             # Generate spread JSON object
-            spreadJson = {'price': str("%.6f" % spread),
+            spreadJson = {'price': str("%.8f" % spread),
                           'remaining': 'SPREAD'}
             # Clear model's string list
             self.ethbtcModel.clear()
