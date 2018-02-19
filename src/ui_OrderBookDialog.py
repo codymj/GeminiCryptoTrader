@@ -70,9 +70,6 @@ class Ui_OrderBookDialog(object):
         self.closeButton = QtWidgets.QPushButton(OrderBookDialog)
         self.closeButton.setObjectName("closeButton")
         self.horizontalLayout.addWidget(self.closeButton)
-        self.updateButton = QtWidgets.QPushButton(OrderBookDialog)
-        self.updateButton.setObjectName("updateButton")
-        self.horizontalLayout.addWidget(self.updateButton)
         self.verticalLayout.addLayout(self.horizontalLayout)
         self.gridLayout_2.addLayout(self.verticalLayout, 0, 0, 1, 1)
 
@@ -87,5 +84,4 @@ class Ui_OrderBookDialog(object):
         self.orderBookTabs.setTabText(self.orderBookTabs.indexOf(self.ethusdTab), _translate("OrderBookDialog", "ETHUSD"))
         self.orderBookTabs.setTabText(self.orderBookTabs.indexOf(self.ethbtcTab), _translate("OrderBookDialog", "ETHBTC"))
         self.closeButton.setText(_translate("OrderBookDialog", "&Close"))
-        self.updateButton.setText(_translate("OrderBookDialog", "&Update"))
 
