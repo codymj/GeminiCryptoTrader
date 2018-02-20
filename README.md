@@ -3,6 +3,10 @@
 Application which will utilize the Gemini API for trading Bitcoin (BTC) and
 Ethereum (ETH).
 
+Account information can be encrypted locally with a password. The password is
+hashed with bcrypt and saved in a separate file. Account data files are
+encrypted with AES.
+
 * Built with PyQt5
 * Status: Not complete
 
