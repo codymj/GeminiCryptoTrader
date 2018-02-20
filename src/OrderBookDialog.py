@@ -5,8 +5,8 @@
 #                                                                              #
 ################################################################################
 
-import sys, json, websocket, threading, time
-from websocket import create_connection
+import sys, json, threading, time, urllib
+from urllib.request import urlopen
 from ui_OrderBookDialog import Ui_OrderBookDialog
 from PyQt5 import uic, QtGui, QtWidgets
 from PyQt5.QtGui import QStandardItemModel, QStandardItem, QFontDatabase
@@ -14,21 +14,25 @@ from PyQt5.QtWidgets import QListView
 from PyQt5.QtCore import pyqtSlot, pyqtSignal, QModelIndex, QThread, QObject
 
 class Worker(QObject):
-    baseUrl = 'wss://api.gemini.com/v1/marketdata/'
+    baseUrl = 'https://api.gemini.com/v1/book/'
+    nAsks = None                            # Number of ask trades to retrieve
+    nBids = None                            # Number of bid trades to retrieve
     flag = None                             # 'BTCUSD', 'ETHUSD', 'ETHBTC'
     cutoff = None                           # Number of asks and bids to display
     width = None                            # Width of data fields
     data = {}                               # Data received
     stringList = []                         # Data strings for QListView
     stopWorking = False                     # Flag to stop work
-    dataReady = pyqtSignal(str, list)       # Signal
+    dataReady = pyqtSignal(str, list)       # Signal GUI update
 
     # Initializer
-    def __init__(self, flag, cutoff=9, width=15):
+    def __init__(self, flag, cutoff=9, width=15, nAsks=200, nBids=200):
         super(QObject, self).__init__()
         self.flag = flag
         self.cutoff = cutoff
         self.width = width
+        self.nAsks = nAsks
+        self.nBids = nBids
 
     # Stops working
     ############################################################################
@@ -45,8 +49,7 @@ class Worker(QObject):
                 break
             print('Getting '+self.flag+' data')
             self.getData()
-            items = self.parseData()
-            askList, bidList = self.divideAskBid(items)
+            askList, bidList = self.parseData()
             tupled = self.computeCutoffs(askList, bidList)
             self.generateStringList(tupled)
             self.dataReady.emit(self.flag, self.stringList)
@@ -58,52 +61,26 @@ class Worker(QObject):
     # Receive JSON data from Gemini
     ############################################################################
     def getData(self):
-        socket = create_connection(self.baseUrl+self.flag)
-        response = socket.recv()
-        self.data = json.loads(response)
+        paramStr = '?limit_bids='+str(self.nBids)+'&limit_asks='+str(self.nAsks)
+        response = urlopen(self.baseUrl+self.flag.lower()+paramStr)
+        self.data = json.loads(response.read())
 
     # Parse JSON data
     ############################################################################
     def parseData(self):
-        items = []
-
         # If no data, return
         if not self.data:
             return
 
-        # Clear items for update
-        items.clear()
-
-        # If data received is an update
-        if self.data.get('type') == 'update':
-            # Loop through new event data
-            for event in self.data.get('events'):
-                # Parse new events
-                items.append(event)
-
-        return items
-
-    # Divide 'ask' and 'bid' JSON objects into separate lists
-    ############################################################################
-    def divideAskBid(self, items):
-        askList = []
-        bidList = []
-
-        # Separate
-        for item in items:
-            if item.get('side') == 'ask':
-                askList.append(item)
-            elif item.get('side') == 'bid':
-                bidList.append(item)
-            else:
-                continue
-
+        askList = self.data.get('asks')
+        bidList = self.data.get('bids')
         # Format trailing decimals
         for item in askList:
-            item['remaining'] = str("%.8f" % float(item['remaining']))
+            item['amount'] = str("%.8f" % float(item['amount']))
         for item in bidList:
-            item['remaining'] = str("%.8f" % float(item['remaining']))
+            item['amount'] = str("%.8f" % float(item['amount']))
 
+        #return items
         return (askList, bidList)
 
     # Compute cutoff values
@@ -134,7 +111,7 @@ class Worker(QObject):
     def formatItemString(self, json):
         # Unformated data strings
         priceStr = json.get('price')
-        remainStr = json.get('remaining')
+        remainStr = json.get('amount')
 
         # Format strings
         priceStr = "{0:<{1}}".format(priceStr[:self.width], self.width)
@@ -156,9 +133,9 @@ class Worker(QObject):
         # Generate ask cutoff JSON object, format and append to stringList
         askCutoffSum = 0.0
         for item in askCutoffList:
-            askCutoffSum = askCutoffSum + float(item.get('remaining'))
+            askCutoffSum = askCutoffSum + float(item.get('amount'))
         askCutoffJson = {'price': '>' + askList[0].get('price'),
-                         'remaining': str(askCutoffSum)}
+                         'amount': str(askCutoffSum)}
         self.stringList.append(self.formatItemString(askCutoffJson))
 
         # Format and append ask items to stringList
@@ -168,11 +145,11 @@ class Worker(QObject):
         # Generate spread JSON object, format and append to stringList
         if (self.flag == 'ETHBTC'):
             spreadJson = {'price': str("%.5f" % spread),
-                          'remaining': 'SPREAD'}
+                          'amount': 'SPREAD'}
             self.stringList.append(self.formatItemString(spreadJson))
         else:
             spreadJson = {'price': str("%.2f" % spread),
-                          'remaining': 'SPREAD'}
+                          'amount': 'SPREAD'}
             self.stringList.append(self.formatItemString(spreadJson))
 
         # Format and append bid items to stringList
@@ -182,16 +159,16 @@ class Worker(QObject):
         # Generate bid cutoff JSON object, format and append to stringList
         bidCutoffSum = 0.0
         for item in bidCutoffList:
-            bidCutoffSum = bidCutoffSum + float(item.get('remaining'))
+            bidCutoffSum = bidCutoffSum + float(item.get('amount'))
         bidCutoffJson = {'price': '<' + bidList[-1].get('price'),
-                         'remaining': str(bidCutoffSum)}
+                         'amount': str(bidCutoffSum)}
         self.stringList.append(self.formatItemString(bidCutoffJson))
 
 
 class OrderBookDialog(QtWidgets.QDialog, Ui_OrderBookDialog):
     # Class data
-    cutoff = None               #
-    width = None                #
+    cutoff = None               # Number of asks and bids to display
+    width = None                # Width of data fields
     btcusdWorker = None         # Worker for updating btcusd data
     btcusdThread = QThread()    # Thread for worker
     ethusdWorker = None         # Worker for updating ethusd data
