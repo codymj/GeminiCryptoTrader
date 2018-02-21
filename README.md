@@ -1,4 +1,5 @@
-# GeminiCryptoTrader
+GeminiCryptoTrader
+==================
 
 Application which will utilize the Gemini API for trading Bitcoin (BTC) and
 Ethereum (ETH).
@@ -12,18 +13,12 @@ encrypted with AES.
 
 Screenshots:
 ------------
-* MainWindow:
-<p>
-    <img src="https://i.imgur.com/Ygdk65z.png" />
-</p>
-* Account setup:
-<p>
-    <img src="https://i.imgur.com/OGI3bXT.png" />
-</p>
-* Order book:
-<p>
-    <img src="https://i.imgur.com/tNgxkqp.png" />
-</p>
+MainWindow:
+<p><img src="https://i.imgur.com/Ygdk65z.png" /></p>
+Account setup:
+<p><img src="https://i.imgur.com/OGI3bXT.png" /></p>
+Order book:
+<p><img src="https://i.imgur.com/tNgxkqp.png" /></p>
 
 
 Visit:
