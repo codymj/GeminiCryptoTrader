@@ -216,7 +216,7 @@
               </widget>
              </item>
              <item row="0" column="1">
-              <widget class="QLabel" name="accountBalanceLabel">
+              <widget class="QLabel" name="usdBalanceLabel">
                <property name="text">
                 <string/>
                </property>
