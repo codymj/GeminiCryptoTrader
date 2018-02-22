@@ -421,8 +421,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             # Update market data
             self.marketData.updateTickers()
 
-            # Update the dashboard
-            self.updateDashboard()
+            # Update ticker labels
+            self.updateTickerGui()
 
             # Wait
             time.sleep(5)
@@ -451,10 +451,29 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         }
 
         response = requests.request("POST", baseUrl, headers=headers)
-        self.balances = response.text
+        self.balances = json.loads(response.text)
 
-    # Updates dashboard with market data
+        self.updateBalanceGui()
+
+    # Updates the ticker labels
     ############################################################################
-    def updateDashboard(self):
+    def updateTickerGui(self):
         self.btcLastPriceLabel.setText('$'+self.marketData.tickers[0]['last'])
         self.ethLastPriceLabel.setText('$'+self.marketData.tickers[1]['last'])
+
+    # Updates balance labels
+    ############################################################################
+    def updateBalanceGui(self):
+        for item in self.balances:
+            print(item)
+            if item['currency'] == 'BTC':
+                self.btcBalanceLabel.setText(item['amount']+' BTC')
+                self.btcAvailableLabel.setText(item['available']+' BTC')
+            elif item['currency'] == 'USD':
+                self.usdBalanceLabel.setText('$'+item['amount'])
+                self.usdAvailableLabel.setText('$'+item['available'])
+            elif item['currency'] == 'ETH':
+                self.ethBalanceLabel.setText(item['amount']+' ETH')
+                self.ethAvailableLabel.setText(item['available']+' ETH')
+
+        self.statusBar.showMessage('Balances updated.')
