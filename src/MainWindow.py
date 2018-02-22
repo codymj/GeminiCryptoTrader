@@ -437,9 +437,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         request = '/v1/balances'
 
         payload = {'request': request, 'nonce': nonce}
-        b64 = base64.b64encode(json.dumps(payload))
+        b64 = base64.b64encode(str.encode(json.dumps(payload)))
 
-        signature = hmac.new(secret, b64, hashlib.sha384).hexdigest()
+        signature = hmac.new(str.encode(secret), b64, hashlib.sha384).hexdigest()
 
         headers = {
             'Content-Type': "text/plain",
@@ -451,7 +451,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         }
 
         response = requests.request("POST", baseUrl, headers=headers)
-        print(responce.read())
+        self.balances = response.text
 
     # Updates dashboard with market data
     ############################################################################
