@@ -241,6 +241,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     # Saves settings to file
     ############################################################################
     def saveSettings(self):
+        if not self.settingsDir:
+            self.settingsDir = 'Settings.json'
         with open(self.settingsDir, 'w') as f:
             json.dump(self.settings, f)
 
