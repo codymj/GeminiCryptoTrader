@@ -26,7 +26,7 @@ class Worker(QObject):
     dataReady = pyqtSignal(str, list)       # Signal GUI update
 
     # Initializer
-    def __init__(self, flag, cutoff=9, width=15, nAsks=200, nBids=200):
+    def __init__(self, flag, cutoff=9, width=15, nAsks=0, nBids=0):
         super(QObject, self).__init__()
         self.flag = flag
         self.cutoff = cutoff
