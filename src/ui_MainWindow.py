@@ -11,9 +11,9 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(640, 360)
-        MainWindow.setMinimumSize(QtCore.QSize(640, 360))
-        MainWindow.setMaximumSize(QtCore.QSize(640, 360))
+        MainWindow.resize(747, 420)
+        MainWindow.setMinimumSize(QtCore.QSize(747, 420))
+        MainWindow.setMaximumSize(QtCore.QSize(747, 420))
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.gridLayout_7 = QtWidgets.QGridLayout(self.centralwidget)
@@ -240,7 +240,7 @@ class Ui_MainWindow(object):
         self.gridLayout_7.addWidget(self.mainTabWidget, 0, 0, 1, 1)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menuBar = QtWidgets.QMenuBar(MainWindow)
-        self.menuBar.setGeometry(QtCore.QRect(0, 0, 640, 22))
+        self.menuBar.setGeometry(QtCore.QRect(0, 0, 747, 22))
         self.menuBar.setObjectName("menuBar")
         self.fileMenu = QtWidgets.QMenu(self.menuBar)
         self.fileMenu.setObjectName("fileMenu")
