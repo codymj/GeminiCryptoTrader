@@ -6,8 +6,8 @@
 ################################################################################
 
 import sys, json, os.path, icons, urllib, time, datetime
-import threading, requests, base64, hmac
-from datetime import date, timedelta
+import threading, requests, base64, hmac, math
+from datetime import date, timedelta, datetime
 from hashlib import sha384
 from urllib.request import urlopen
 from urllib.error import URLError
@@ -30,6 +30,10 @@ from OrderBookDialog import OrderBookDialog
 from AboutDialog import AboutDialog
 from EncryptFiles import *
 from GeminiPublicAPI import MarketData
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
+import matplotlib.pyplot as plt
+from matplotlib.ticker import MaxNLocator
 
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     # Class data
@@ -43,11 +47,23 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     marketData = None       # MarketData object
     marketDataThread = None # Thread for updating marketData
     balances = []           # List of balance info from Gemini
+    btcTradeData = []       # List of btcusd trade data from Gemini
+    ethTradeData = []       # List of ethusd trade data from Gemini
 
     # Initializer
     def __init__(self):
         super(MainWindow, self).__init__()
         self.initUI()
+
+        # Create graph widgets
+        self.btcFigure = plt.figure()
+        self.btcCanvas = FigureCanvas(self.btcFigure)
+        self.ethFigure = plt.figure()
+        self.ethCanvas = FigureCanvas(self.ethFigure)
+        self.btcLayout.addWidget(self.btcCanvas)
+        self.ethLayout.addWidget(self.ethCanvas)
+
+
         self.startUp()
 
         # Start threads
@@ -437,12 +453,52 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         baseUrl = 'https://api.gemini.com/v1/trades/'
 
         # Time stamp for yesterday to receive trades from past 24h
-        date24h = date.today() - timedelta(1)
+        date24h = datetime.now() - timedelta(1)
         date24h = date24h.strftime('%s')
+        params = '?since=%s&limit_trades=250' % date24h
 
         # Get BTCUSD trades
-        response = requests.request("GET", baseUrl+"btcusd?since=%s" % date24h)
-        print(response.text)
+        response = requests.request('GET', baseUrl+'btcusd'+params)
+        self.btcTradeData = json.loads(response.text)
+
+        # Get ETHUSD trades
+        response = requests.request('GET', baseUrl+'ethusd'+params)
+        self.ethTradeData = json.loads(response.text)
+
+        # Sort data
+        self.btcTradeData.sort(key=lambda k: float(k.get('timestampms')))
+        self.ethTradeData.sort(key=lambda k: float(k.get('timestampms')))
+
+        # Plot
+        self.plotTradeHistory()
+
+    # Plots trade history on the dashboard
+    ############################################################################
+    def plotTradeHistory(self):
+        # Clear plot for new data
+        self.btcFigure.clear()
+        self.ethFigure.clear()
+
+        # Add axis
+        btcAx = self.btcFigure.add_subplot(111)
+        ethAx = self.ethFigure.add_subplot(111)
+
+        # Customize axis
+        locator = MaxNLocator(nbins=3)
+        btcAx.xaxis.set_major_locator(locator)
+        btcAx.yaxis.set_major_locator(locator)
+
+        # Plot data
+        btcAx.plot(list(item['price'] for item in self.btcTradeData), '-')
+        ethAx.plot(list(item['price'] for item in self.ethTradeData), '-')
+
+        # Customize axis
+        btcAx.locator_params(axis='both', tight=None, nbins=3)
+        ethAx.locator_params(axis='both', tight=None, nbins=3)
+
+        # Refresh
+        self.btcCanvas.draw()
+        self.ethCanvas.draw()
 
     # Receive balances from Gemini
     ############################################################################
