@@ -113,7 +113,7 @@
              </layout>
             </item>
             <item row="1" column="0">
-             <widget class="QGraphicsView" name="btcGraphView"/>
+             <widget class="QGraphicsView" name="btcGraph"/>
             </item>
            </layout>
           </widget>
@@ -182,7 +182,7 @@
              </layout>
             </item>
             <item row="1" column="0">
-             <widget class="QGraphicsView" name="ethGraphView"/>
+             <widget class="QGraphicsView" name="ethGraph"/>
             </item>
            </layout>
           </widget>
@@ -384,7 +384,7 @@
        </attribute>
        <layout class="QGridLayout" name="gridLayout_8">
         <item row="0" column="0">
-         <widget class="QTableWidget" name="transactionsTableWidget"/>
+         <widget class="QTableWidget" name="transactionsTable"/>
         </item>
        </layout>
       </widget>
@@ -394,7 +394,7 @@
        </attribute>
        <layout class="QGridLayout" name="gridLayout_9">
         <item row="0" column="0">
-         <widget class="QTableWidget" name="openOrdersTableWidget"/>
+         <widget class="QTableWidget" name="openOrdersTable"/>
         </item>
        </layout>
       </widget>
@@ -404,7 +404,7 @@
        </attribute>
        <layout class="QGridLayout" name="gridLayout_10">
         <item row="0" column="0">
-         <widget class="QTableWidget" name="conditionalTableWidget"/>
+         <widget class="QTableWidget" name="conditionalTable"/>
         </item>
        </layout>
       </widget>
