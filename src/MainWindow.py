@@ -5,8 +5,9 @@
 #                                                                              #
 ################################################################################
 
-import sys, json, os.path, icons, urllib, time
+import sys, json, os.path, icons, urllib, time, datetime
 import threading, requests, base64, hmac
+from datetime import date, timedelta
 from hashlib import sha384
 from urllib.request import urlopen
 from urllib.error import URLError
@@ -71,7 +72,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.toggleStatusBarAction.triggered.connect(self.toggleStatusBar)
         self.showOrderBookAction.triggered.connect(self.openOrderBookDialog)
         self.aboutAction.triggered.connect(self.openAboutDialog)
-        self.connectButton.clicked.connect(self.getBalances)
+        self.connectButton.clicked.connect(self.getTradeHistory)
 
     # Run start up processes
     ############################################################################
@@ -429,6 +430,19 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
             # Wait
             time.sleep(5)
+
+    # Receive trade history from Gemini
+    ############################################################################
+    def getTradeHistory(self):
+        baseUrl = 'https://api.gemini.com/v1/trades/'
+
+        # Time stamp for yesterday to receive trades from past 24h
+        date24h = date.today() - timedelta(1)
+        date24h = date24h.strftime('%s')
+
+        # Get BTCUSD trades
+        response = requests.request("GET", baseUrl+"btcusd?since=%s" % date24h)
+        print(response.text)
 
     # Receive balances from Gemini
     ############################################################################
