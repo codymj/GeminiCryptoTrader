@@ -418,11 +418,14 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     ############################################################################
     def marketDataLoop(self):
         while True:
-            # Update market data
-            self.marketData.updateTickers()
+            if not self.hasConnection:
+                continue
+            else:
+                # Update market data
+                self.marketData.updateTickers()
 
-            # Update ticker labels
-            self.updateTickerGui()
+                # Update ticker labels
+                self.updateTickerGui()
 
             # Wait
             time.sleep(5)
@@ -458,6 +461,11 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     # Updates the ticker labels
     ############################################################################
     def updateTickerGui(self):
+        if not self.marketData.tickers[0]['last']:
+            return
+        if not self.marketData.tickers[1]['last']:
+            return
+
         self.btcLastPriceLabel.setText('$'+self.marketData.tickers[0]['last'])
         self.ethLastPriceLabel.setText('$'+self.marketData.tickers[1]['last'])
 
@@ -465,7 +473,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     ############################################################################
     def updateBalanceGui(self):
         for item in self.balances:
-            print(item)
+            # Error
+            if item == 'result':
+                return
+
             if item['currency'] == 'BTC':
                 self.btcBalanceLabel.setText(item['amount']+' BTC')
                 self.btcAvailableLabel.setText(item['available']+' BTC')
