@@ -88,7 +88,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.toggleStatusBarAction.triggered.connect(self.toggleStatusBar)
         self.showOrderBookAction.triggered.connect(self.openOrderBookDialog)
         self.aboutAction.triggered.connect(self.openAboutDialog)
-        self.connectButton.clicked.connect(self.getTradeHistory)
+        #self.connectButton.clicked.connect(self.getTradeHistory)
 
     # Run start up processes
     ############################################################################
@@ -108,7 +108,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.statusBar.showMessage('No internet connection detected.')
 
         # Build threads
-        self.marketDataThread = threading.Thread(target=self.marketDataLoop, args=())
+        self.marketDataThread = threading.Thread(target=self.marketDataLoop,
+            args=())
         self.marketDataThread.daemon = True
 
     # When user closes program, save all data & encrypt if necessary
@@ -440,41 +441,48 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             else:
                 # Update market data
                 self.marketData.updateTickers()
-
-                # Update ticker labels
                 self.updateTickerGui()
 
-            # Wait
-            time.sleep(5)
+                self.getTradeHistory()
+                self.plotTradeHistory()
+
+            # Wait 15 seconds
+            time.sleep(15)
 
     # Receive trade history from Gemini
     ############################################################################
     def getTradeHistory(self):
-        baseUrl = 'https://api.gemini.com/v1/trades/'
-
-        # Time stamp for yesterday to receive trades from past 24h
-        date24h = datetime.now() - timedelta(1)
-        date24h = date24h.strftime('%s')
-        params = '?since=%s&limit_trades=250' % date24h
+        # TODO: Allow parameter to set day range
+        baseUrl = 'https://min-api.cryptocompare.com/data/histominute'
+        btcParams = '?fsym=BTC&tsym=USD&limit=1440&e=Gemini'
+        ethParams = '?fsym=ETH&tsym=USD&limit=1440&e=Gemini'
 
         # Get BTCUSD trades
-        response = requests.request('GET', baseUrl+'btcusd'+params)
-        self.btcTradeData = json.loads(response.text)
+        response = requests.request('GET', baseUrl+btcParams)
+        btcData = json.loads(response.text)
+        self.btcTradeData = btcData['Data'][0::5]
 
         # Get ETHUSD trades
-        response = requests.request('GET', baseUrl+'ethusd'+params)
-        self.ethTradeData = json.loads(response.text)
-
-        # Sort data
-        self.btcTradeData.sort(key=lambda k: float(k.get('timestampms')))
-        self.ethTradeData.sort(key=lambda k: float(k.get('timestampms')))
-
-        # Plot
-        self.plotTradeHistory()
+        response = requests.request('GET', baseUrl+ethParams)
+        ethData = json.loads(response.text)
+        self.ethTradeData = ethData['Data'][0::5]
 
     # Plots trade history on the dashboard
     ############################################################################
     def plotTradeHistory(self):
+        # Sort data by time
+        self.btcTradeData.sort(key=lambda k: float(k.get('time')))
+        self.ethTradeData.sort(key=lambda k: float(k.get('time')))
+
+        # Get open, high and low prices for each hour
+        btcOpen = [float(item['open']) for item in self.btcTradeData]
+        btcHigh = max([float(item['high']) for item in self.btcTradeData])
+        btcLow = min([float(item['low']) for item in self.btcTradeData])
+
+        ethOpen = [float(item['open']) for item in self.ethTradeData]
+        ethHigh = max([float(item['high']) for item in self.ethTradeData])
+        ethLow = min([float(item['low']) for item in self.ethTradeData])
+
         # Clear plot for new data
         self.btcFigure.clear()
         self.ethFigure.clear()
@@ -484,17 +492,45 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         ethAx = self.ethFigure.add_subplot(111)
 
         # Customize axis
-        locator = MaxNLocator(nbins=3)
-        btcAx.xaxis.set_major_locator(locator)
-        btcAx.yaxis.set_major_locator(locator)
+        btcXTicks = [int(i['time']) for i in self.btcTradeData]
+        btcXTicks = btcXTicks[0::60]
+        btcXTicks = [
+        datetime.fromtimestamp(i).strftime('%H:%M:%S') for i in btcXTicks]
+
+        ethXTicks = [int(i['time']) for i in self.ethTradeData]
+        ethXTicks = ethXTicks[0::60]
+        ethXTicks = [
+        datetime.fromtimestamp(i).strftime('%H:%M:%S') for i in ethXTicks]
+
+        btcAx.locator_params(axis='both', tight=None, nbins=4)
+        ethAx.locator_params(axis='both', tight=None, nbins=4)
+
+        # Update 24-hour change and range
+        btcDelta = (float(self.btcTradeData[-1]['open'])
+                   - float(self.btcTradeData[0]['open']))
+        if btcDelta < 0:
+            btcDelta = btcDelta * -1.0
+            strBtcDelta = '(' + '${:,.2f}'.format(btcDelta) + ')'
+        else:
+            strBtcDelta = '${:,.2f}'.format(btcDelta)
+        self.btcDeltaLabel.setText(strBtcDelta)
+        strBtcRange = '${:,.2f}'.format(btcLow)+' - '+'${:,.2f}'.format(btcHigh)
+        self.btcRangeLabel.setText(strBtcRange)
+
+        ethDelta = (float(self.ethTradeData[-1]['open'])
+                   - float(self.ethTradeData[0]['open']))
+        if ethDelta < 0:
+            ethDelta = ethDelta * -1.0
+            strEthDelta = '(' + '${:,.2f}'.format(ethDelta) + ')'
+        else:
+            strEthDelta = '${:,.2f}'.format(ethDelta)
+        self.ethDeltaLabel.setText(strEthDelta)
+        strEthRange = '${:,.2f}'.format(ethLow)+' - '+'${:,.2f}'.format(ethHigh)
+        self.ethRangeLabel.setText(strEthRange)
 
         # Plot data
-        btcAx.plot(list(item['price'] for item in self.btcTradeData), '-')
-        ethAx.plot(list(item['price'] for item in self.ethTradeData), '-')
-
-        # Customize axis
-        btcAx.locator_params(axis='both', tight=None, nbins=3)
-        ethAx.locator_params(axis='both', tight=None, nbins=3)
+        btcAx.plot([i['time'] for i in self.btcTradeData], btcOpen, '-')
+        ethAx.plot([i['time'] for i in self.ethTradeData], ethOpen, '-')
 
         # Refresh
         self.btcCanvas.draw()
@@ -512,7 +548,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         payload = {'request': request, 'nonce': nonce}
         b64 = base64.b64encode(str.encode(json.dumps(payload)))
 
-        signature = hmac.new(str.encode(secret), b64, hashlib.sha384).hexdigest()
+        signature = hmac.new(str.encode(secret),
+            b64, hashlib.sha384).hexdigest()
 
         headers = {
             'Content-Type': "text/plain",
