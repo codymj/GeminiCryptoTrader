@@ -444,6 +444,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 self.marketData.updateTickers()
                 self.updateTickerGui()
 
+                # Update trade history
                 self.getTradeHistory()
                 self.plotTradeHistory()
 
@@ -461,12 +462,12 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # Get BTCUSD trades
         response = requests.request('GET', baseUrl+btcParams)
         btcData = json.loads(response.text)
-        self.btcTradeData = btcData['Data'][0::5]
+        self.btcTradeData = btcData['Data']
 
         # Get ETHUSD trades
         response = requests.request('GET', baseUrl+ethParams)
         ethData = json.loads(response.text)
-        self.ethTradeData = ethData['Data'][0::5]
+        self.ethTradeData = ethData['Data']
 
     # Plots trade history on the dashboard
     ############################################################################
@@ -477,12 +478,18 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         # Get open, high and low prices for each hour
         btcOpen = [float(item['open']) for item in self.btcTradeData]
-        btcHigh = max([float(item['high']) for item in self.btcTradeData])
-        btcLow = min([float(item['low']) for item in self.btcTradeData])
+        btcHigh = [float(item['high']) for item in self.btcTradeData]
+        btcLow = [float(item['low']) for item in self.btcTradeData]
+        btcClose = [float(item['close']) for item in self.btcTradeData]
+        btcMaxHigh = max(btcHigh)
+        btcMinLow = min(btcLow)
 
         ethOpen = [float(item['open']) for item in self.ethTradeData]
-        ethHigh = max([float(item['high']) for item in self.ethTradeData])
-        ethLow = min([float(item['low']) for item in self.ethTradeData])
+        ethHigh = [float(item['high']) for item in self.ethTradeData]
+        ethLow = [float(item['low']) for item in self.ethTradeData]
+        ethClose = [float(item['close']) for item in self.ethTradeData]
+        ethMaxHigh = max(ethHigh)
+        ethMinLow = min(ethLow)
 
         # Clear plot for new data
         self.btcFigure.clear()
@@ -494,26 +501,31 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         # Customize axis
         btcXTicks = [int(i['time']) for i in self.btcTradeData]
-        btcXTicks = btcXTicks[0::60]
+        btcXTicks = btcXTicks[0::240]
         btcXTicks = [
         datetime.utcfromtimestamp(i).strftime('%H:%M') for i in btcXTicks]
-        print(btcXTicks)
-
         ethXTicks = [int(i['time']) for i in self.ethTradeData]
-        ethXTicks = ethXTicks[0::60]
+        ethXTicks = ethXTicks[0::240]
         ethXTicks = [
         datetime.utcfromtimestamp(i).strftime('%H:%M') for i in ethXTicks]
 
-        btcAx.xaxis.set_major_locator(MaxNLocator(prune='both', nbins=5))
+        btcAx.xaxis.set_major_locator(MaxNLocator(prune='both', nbins=7))
         btcAx.yaxis.set_major_locator(MaxNLocator(prune='both', nbins=6))
-
-        ethAx.xaxis.set_major_locator(MaxNLocator(prune='both', nbins=5))
+        ethAx.xaxis.set_major_locator(MaxNLocator(prune='both', nbins=7))
         ethAx.yaxis.set_major_locator(MaxNLocator(prune='both', nbins=6))
+
+        btcAx.xaxis.grid(b=None, which='major', linestyle=':')
+        btcAx.yaxis.grid(b=None, which='major', linestyle=':')
+        ethAx.xaxis.grid(b=None, which='major', linestyle=':')
+        ethAx.yaxis.grid(b=None, which='major', linestyle=':')
 
         btcAx.set_xticklabels(btcXTicks)
         ethAx.set_xticklabels(ethXTicks)
 
-        # Update 24-hour change and range
+        btcAx.autoscale(enable=True, axis='x', tight=None)
+        ethAx.autoscale(enable=True, axis='x', tight=None)
+
+        # Update 24-hour delta
         btcDelta = (float(self.btcTradeData[-1]['open'])
                    - float(self.btcTradeData[0]['open']))
         if btcDelta < 0:
@@ -522,9 +534,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         else:
             strBtcDelta = '${:,.2f}'.format(btcDelta)
         self.btcDeltaLabel.setText(strBtcDelta)
-        strBtcRange = '${:,.2f}'.format(btcLow)+' - '+'${:,.2f}'.format(btcHigh)
-        self.btcRangeLabel.setText(strBtcRange)
-
         ethDelta = (float(self.ethTradeData[-1]['open'])
                    - float(self.ethTradeData[0]['open']))
         if ethDelta < 0:
@@ -533,12 +542,22 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         else:
             strEthDelta = '${:,.2f}'.format(ethDelta)
         self.ethDeltaLabel.setText(strEthDelta)
-        strEthRange = '${:,.2f}'.format(ethLow)+' - '+'${:,.2f}'.format(ethHigh)
+
+        # Update 24-hour range
+        strBtcRange = ('${:,.2f}'.format(btcMinLow)
+                      + ' - '
+                      + '${:,.2f}'.format(btcMaxHigh))
+        self.btcRangeLabel.setText(strBtcRange)
+        strEthRange = ('${:,.2f}'.format(ethMinLow)
+                      + ' - '
+                      + '${:,.2f}'.format(ethMaxHigh))
         self.ethRangeLabel.setText(strEthRange)
 
         # Plot data
-        btcAx.plot([i['time'] for i in self.btcTradeData], btcOpen, '-')
-        ethAx.plot([i['time'] for i in self.ethTradeData], ethOpen, '-')
+        btcAx.plot([i['time'] for i in self.btcTradeData],
+            btcClose, '-', color='k', linewidth=1)
+        ethAx.plot([i['time'] for i in self.ethTradeData],
+            ethClose, '-', color='k', linewidth=1)
 
         # Refresh
         self.btcCanvas.draw()
