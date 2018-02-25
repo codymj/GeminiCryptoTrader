@@ -5,9 +5,9 @@
 #                                                                              #
 ################################################################################
 
-import sys, json, os.path, icons, urllib, time, datetime, pytz
+import sys, json, os.path, icons, urllib, time, datetime
 import threading, requests, base64, hmac, math
-from pytz import reference
+import numpy as np
 from datetime import date, timedelta, datetime
 from hashlib import sha384
 from urllib.request import urlopen
@@ -34,7 +34,6 @@ from GeminiPublicAPI import MarketData
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 import matplotlib.pyplot as plt
-from matplotlib.ticker import MaxNLocator, AutoLocator
 
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     # Class data
@@ -472,6 +471,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     # Plots trade history on the dashboard
     ############################################################################
     def plotTradeHistory(self):
+        # Clear plot for new data
+        self.btcFigure.clear()
+        self.ethFigure.clear()
+
         # Sort data by time
         self.btcTradeData.sort(key=lambda k: float(k.get('time')))
         self.ethTradeData.sort(key=lambda k: float(k.get('time')))
@@ -491,39 +494,24 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         ethMaxHigh = max(ethHigh)
         ethMinLow = min(ethLow)
 
-        # Clear plot for new data
-        self.btcFigure.clear()
-        self.ethFigure.clear()
-
         # Add axis
         btcAx = self.btcFigure.add_subplot(111)
         ethAx = self.ethFigure.add_subplot(111)
 
         # Customize axis
         btcXTicks = [int(i['time']) for i in self.btcTradeData]
-        btcXTicks = btcXTicks[0::240]
+        btcXTicks = btcXTicks[::240]
         btcXTicks = [
-        datetime.fromtimestamp(i).strftime('%H:%M') for i in btcXTicks]
+            datetime.fromtimestamp(i).strftime('%H:%M') for i in btcXTicks]
         ethXTicks = [int(i['time']) for i in self.ethTradeData]
-        ethXTicks = ethXTicks[0::240]
+        ethXTicks = ethXTicks[::240]
         ethXTicks = [
-        datetime.fromtimestamp(i).strftime('%H:%M') for i in ethXTicks]
-
-        btcAx.xaxis.set_major_locator(MaxNLocator(prune='both', nbins=7))
-        btcAx.yaxis.set_major_locator(MaxNLocator(prune='both', nbins=6))
-        ethAx.xaxis.set_major_locator(MaxNLocator(prune='both', nbins=7))
-        ethAx.yaxis.set_major_locator(MaxNLocator(prune='both', nbins=6))
+            datetime.fromtimestamp(i).strftime('%H:%M') for i in ethXTicks]
 
         btcAx.xaxis.grid(b=None, which='major', linestyle=':')
         btcAx.yaxis.grid(b=None, which='major', linestyle=':')
         ethAx.xaxis.grid(b=None, which='major', linestyle=':')
         ethAx.yaxis.grid(b=None, which='major', linestyle=':')
-
-        btcAx.set_xticklabels(btcXTicks)
-        ethAx.set_xticklabels(ethXTicks)
-
-        btcAx.autoscale(enable=True, axis='x', tight=None)
-        ethAx.autoscale(enable=True, axis='x', tight=None)
 
         # Update 24-hour delta
         btcDelta = (float(self.btcTradeData[-1]['open'])
@@ -552,6 +540,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                       + ' - '
                       + '${:,.2f}'.format(ethMaxHigh))
         self.ethRangeLabel.setText(strEthRange)
+
+        btcAx.set_xticklabels(btcXTicks)
+        ethAx.set_xticklabels(ethXTicks)
 
         # Plot data
         btcAx.plot([i['time'] for i in self.btcTradeData],
