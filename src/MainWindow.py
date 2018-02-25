@@ -5,8 +5,9 @@
 #                                                                              #
 ################################################################################
 
-import sys, json, os.path, icons, urllib, time, datetime
+import sys, json, os.path, icons, urllib, time, datetime, pytz
 import threading, requests, base64, hmac, math
+from pytz import reference
 from datetime import date, timedelta, datetime
 from hashlib import sha384
 from urllib.request import urlopen
@@ -33,7 +34,7 @@ from GeminiPublicAPI import MarketData
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 import matplotlib.pyplot as plt
-from matplotlib.ticker import MaxNLocator
+from matplotlib.ticker import MaxNLocator, AutoLocator
 
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     # Class data
@@ -495,15 +496,22 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         btcXTicks = [int(i['time']) for i in self.btcTradeData]
         btcXTicks = btcXTicks[0::60]
         btcXTicks = [
-        datetime.fromtimestamp(i).strftime('%H:%M:%S') for i in btcXTicks]
+        datetime.utcfromtimestamp(i).strftime('%H:%M') for i in btcXTicks]
+        print(btcXTicks)
 
         ethXTicks = [int(i['time']) for i in self.ethTradeData]
         ethXTicks = ethXTicks[0::60]
         ethXTicks = [
-        datetime.fromtimestamp(i).strftime('%H:%M:%S') for i in ethXTicks]
+        datetime.utcfromtimestamp(i).strftime('%H:%M') for i in ethXTicks]
 
-        btcAx.locator_params(axis='both', tight=None, nbins=4)
-        ethAx.locator_params(axis='both', tight=None, nbins=4)
+        btcAx.xaxis.set_major_locator(MaxNLocator(prune='both', nbins=5))
+        btcAx.yaxis.set_major_locator(MaxNLocator(prune='both', nbins=6))
+
+        ethAx.xaxis.set_major_locator(MaxNLocator(prune='both', nbins=5))
+        ethAx.yaxis.set_major_locator(MaxNLocator(prune='both', nbins=6))
+
+        btcAx.set_xticklabels(btcXTicks)
+        ethAx.set_xticklabels(ethXTicks)
 
         # Update 24-hour change and range
         btcDelta = (float(self.btcTradeData[-1]['open'])
