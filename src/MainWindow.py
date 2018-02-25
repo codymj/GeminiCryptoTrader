@@ -503,11 +503,11 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         btcXTicks = [int(i['time']) for i in self.btcTradeData]
         btcXTicks = btcXTicks[0::240]
         btcXTicks = [
-        datetime.utcfromtimestamp(i).strftime('%H:%M') for i in btcXTicks]
+        datetime.fromtimestamp(i).strftime('%H:%M') for i in btcXTicks]
         ethXTicks = [int(i['time']) for i in self.ethTradeData]
         ethXTicks = ethXTicks[0::240]
         ethXTicks = [
-        datetime.utcfromtimestamp(i).strftime('%H:%M') for i in ethXTicks]
+        datetime.fromtimestamp(i).strftime('%H:%M') for i in ethXTicks]
 
         btcAx.xaxis.set_major_locator(MaxNLocator(prune='both', nbins=7))
         btcAx.yaxis.set_major_locator(MaxNLocator(prune='both', nbins=6))
