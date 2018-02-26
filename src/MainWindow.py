@@ -5,10 +5,9 @@
 #                                                                              #
 ################################################################################
 
-import sys, json, os.path, icons, urllib, time, datetime
-import threading, requests, base64, hmac, math
-import numpy as np
-from datetime import date, timedelta, datetime
+import sys, json, os.path, icons, urllib, datetime
+import threading, requests, base64, hmac, time
+from datetime import datetime
 from hashlib import sha384
 from urllib.request import urlopen
 from urllib.error import URLError
@@ -30,7 +29,8 @@ from OptionsDialog import OptionsDialog
 from OrderBookDialog import OrderBookDialog
 from AboutDialog import AboutDialog
 from EncryptFiles import *
-from GeminiPublicAPI import MarketData
+from GeminiPublicAPI import Ticker
+from CryptoCompareAPI import TradeHistory
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 import matplotlib.pyplot as plt
@@ -44,11 +44,11 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     settingsDir = ''        # Path of Settings file
     password = ''           # Password in plaintext (never saved)
     hasConnection = False   # Internet connection detected
-    marketData = None       # MarketData object
-    marketDataThread = None # Thread for updating marketData
+    tickerThread = None     # Thread for updating tickers
+    plotThread = None       # Thread for updating plots
     balances = []           # List of balance info from Gemini
-    btcTradeData = []       # List of btcusd trade data from Gemini
-    ethTradeData = []       # List of ethusd trade data from Gemini
+    btcusdPlotData = []     # Trade history for btcusd
+    ethusdPlotData = []     # Trade history for ethusd
 
     # Initializer
     def __init__(self):
@@ -67,7 +67,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.startUp()
 
         # Start threads
-        self.marketDataThread.start()
+        self.tickerThread.start()
+        self.plotThread.start()
 
     # Initialize UI
     def initUI(self):
@@ -102,15 +103,15 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # Check internet connection & get market data if possible
         if self.internetUp(self):
             self.hasConnection = True
-            self.marketData = MarketData(self.account)
         else:
             self.hasConnection = False
             self.statusBar.showMessage('No internet connection detected.')
 
         # Build threads
-        self.marketDataThread = threading.Thread(target=self.marketDataLoop,
-            args=())
-        self.marketDataThread.daemon = True
+        self.tickerThread = threading.Thread(target=self.tickerLoop, args=())
+        self.tickerThread.daemon = True
+        self.plotThread = threading.Thread(target=self.plotLoop, args=())
+        self.plotThread.daemon = True
 
     # When user closes program, save all data & encrypt if necessary
     ############################################################################
@@ -434,77 +435,56 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
     # Gets public market data from Gemini
     ############################################################################
-    def marketDataLoop(self):
+    def tickerLoop(self):
         while True:
             if not self.hasConnection:
                 continue
             else:
-                # Update market data
-                self.marketData.updateTickers()
-                self.updateTickerGui()
-
-                # Update trade history
-                self.getTradeHistory()
-                self.plotTradeHistory()
+                ticker = Ticker()
+                btcusdTicker, ethusdTicker = ticker.getData()
+                self.updateTickerGui(btcusdTicker, ethusdTicker)
 
             # Wait 15 seconds
             time.sleep(15)
 
-    # Receive trade history from Gemini
+    # Gets trade data from CryptoCompare
     ############################################################################
-    def getTradeHistory(self):
-        # TODO: Allow parameter to set day range
-        baseUrl = 'https://min-api.cryptocompare.com/data/histominute'
-        btcParams = '?fsym=BTC&tsym=USD&limit=1440&e=Gemini'
-        ethParams = '?fsym=ETH&tsym=USD&limit=1440&e=Gemini'
+    def plotLoop(self):
+        while True:
+            if not self.hasConnection:
+                continue
+            else:
+                tradeHistory = TradeHistory()
+                btcusdTuple, ethusdTuple = tradeHistory.getData()
+                self.updatePlots(btcusdTuple, ethusdTuple)
 
-        # Get BTCUSD trades
-        response = requests.request('GET', baseUrl+btcParams)
-        btcData = json.loads(response.text)
-        self.btcTradeData = btcData['Data']
+            # Wait 15 seconds
+            time.sleep(15)
 
-        # Get ETHUSD trades
-        response = requests.request('GET', baseUrl+ethParams)
-        ethData = json.loads(response.text)
-        self.ethTradeData = ethData['Data']
-
-    # Plots trade history on the dashboard
+    # Updates plots for trade history
     ############################################################################
-    def plotTradeHistory(self):
+    def updatePlots(self, btcusdTuple, ethusdTuple):
+        # times = [0], closes = [1], range = [2], delta = [3]
+
+        # Update range and delta
+        self.btcDeltaLabel.setText(btcusdTuple[2])
+        self.btcRangeLabel.setText(btcusdTuple[3])
+        self.ethDeltaLabel.setText(ethusdTuple[2])
+        self.ethRangeLabel.setText(ethusdTuple[3])
+
         # Clear plot for new data
         self.btcFigure.clear()
         self.ethFigure.clear()
-
-        # Sort data by time
-        self.btcTradeData.sort(key=lambda k: float(k.get('time')))
-        self.ethTradeData.sort(key=lambda k: float(k.get('time')))
-
-        # Get open, high and low prices for each hour
-        btcOpen = [float(item['open']) for item in self.btcTradeData]
-        btcHigh = [float(item['high']) for item in self.btcTradeData]
-        btcLow = [float(item['low']) for item in self.btcTradeData]
-        btcClose = [float(item['close']) for item in self.btcTradeData]
-        btcMaxHigh = max(btcHigh)
-        btcMinLow = min(btcLow)
-
-        ethOpen = [float(item['open']) for item in self.ethTradeData]
-        ethHigh = [float(item['high']) for item in self.ethTradeData]
-        ethLow = [float(item['low']) for item in self.ethTradeData]
-        ethClose = [float(item['close']) for item in self.ethTradeData]
-        ethMaxHigh = max(ethHigh)
-        ethMinLow = min(ethLow)
 
         # Add axis
         btcAx = self.btcFigure.add_subplot(111)
         ethAx = self.ethFigure.add_subplot(111)
 
         # Customize axis
-        btcXTicks = [int(i['time']) for i in self.btcTradeData]
-        btcXTicks = btcXTicks[::240]
+        btcXTicks = btcusdTuple[0][::240]
         btcXTicks = [
             datetime.fromtimestamp(i).strftime('%H:%M') for i in btcXTicks]
-        ethXTicks = [int(i['time']) for i in self.ethTradeData]
-        ethXTicks = ethXTicks[::240]
+        ethXTicks = ethusdTuple[0][::240]
         ethXTicks = [
             datetime.fromtimestamp(i).strftime('%H:%M') for i in ethXTicks]
 
@@ -513,42 +493,12 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         ethAx.xaxis.grid(b=None, which='major', linestyle=':')
         ethAx.yaxis.grid(b=None, which='major', linestyle=':')
 
-        # Update 24-hour delta
-        btcDelta = (float(self.btcTradeData[-1]['open'])
-                   - float(self.btcTradeData[0]['open']))
-        if btcDelta < 0:
-            btcDelta = btcDelta * -1.0
-            strBtcDelta = '(' + '${:,.2f}'.format(btcDelta) + ')'
-        else:
-            strBtcDelta = '${:,.2f}'.format(btcDelta)
-        self.btcDeltaLabel.setText(strBtcDelta)
-        ethDelta = (float(self.ethTradeData[-1]['open'])
-                   - float(self.ethTradeData[0]['open']))
-        if ethDelta < 0:
-            ethDelta = ethDelta * -1.0
-            strEthDelta = '(' + '${:,.2f}'.format(ethDelta) + ')'
-        else:
-            strEthDelta = '${:,.2f}'.format(ethDelta)
-        self.ethDeltaLabel.setText(strEthDelta)
-
-        # Update 24-hour range
-        strBtcRange = ('${:,.2f}'.format(btcMinLow)
-                      + ' - '
-                      + '${:,.2f}'.format(btcMaxHigh))
-        self.btcRangeLabel.setText(strBtcRange)
-        strEthRange = ('${:,.2f}'.format(ethMinLow)
-                      + ' - '
-                      + '${:,.2f}'.format(ethMaxHigh))
-        self.ethRangeLabel.setText(strEthRange)
-
         btcAx.set_xticklabels(btcXTicks)
         ethAx.set_xticklabels(ethXTicks)
 
         # Plot data
-        btcAx.plot([i['time'] for i in self.btcTradeData],
-            btcClose, '-', color='k', linewidth=1)
-        ethAx.plot([i['time'] for i in self.ethTradeData],
-            ethClose, '-', color='k', linewidth=1)
+        btcAx.plot(btcusdTuple[0], btcusdTuple[1], '-', color='k', linewidth=1)
+        ethAx.plot(ethusdTuple[0], ethusdTuple[1], '-', color='k', linewidth=1)
 
         # Refresh
         self.btcCanvas.draw()
@@ -585,14 +535,14 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
     # Updates the ticker labels
     ############################################################################
-    def updateTickerGui(self):
-        if not self.marketData.tickers[0]['last']:
+    def updateTickerGui(self, btcusdTicker, ethusdTicker):
+        if not btcusdTicker['last']:
             return
-        if not self.marketData.tickers[1]['last']:
+        if not ethusdTicker['last']:
             return
 
-        self.btcLastPriceLabel.setText('$'+self.marketData.tickers[0]['last'])
-        self.ethLastPriceLabel.setText('$'+self.marketData.tickers[1]['last'])
+        self.btcLastPriceLabel.setText('$' + btcusdTicker['last'])
+        self.ethLastPriceLabel.setText('$' + ethusdTicker['last'])
 
     # Updates balance labels
     ############################################################################
