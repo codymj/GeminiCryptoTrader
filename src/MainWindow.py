@@ -465,10 +465,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # times = [0], closes = [1], range = [2], delta = [3]
 
         # Update range and delta
-        self.btcDeltaLabel.setText(btcusdTuple[2])
-        self.btcRangeLabel.setText(btcusdTuple[3])
-        self.ethDeltaLabel.setText(ethusdTuple[2])
-        self.ethRangeLabel.setText(ethusdTuple[3])
+        self.btcRangeLabel.setText(btcusdTuple[2])
+        self.btcDeltaLabel.setText(btcusdTuple[3])
+        self.ethRangeLabel.setText(ethusdTuple[2])
+        self.ethDeltaLabel.setText(ethusdTuple[3])
 
         # Clear plot for new data
         self.btcFigure.clear()
