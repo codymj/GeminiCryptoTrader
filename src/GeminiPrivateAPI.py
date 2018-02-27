@@ -48,7 +48,6 @@ class GeminiPrivateAPI:
 
         response = requests.request("POST", baseUrl, headers=headers)
         response = json.loads(response.text)
-        print(response)
         if self.validResponse(response):
             self.balances = response
             return self.balances
@@ -58,10 +57,10 @@ class GeminiPrivateAPI:
     # Validate response data
     ############################################################################
     def validResponse(self, response):
-        if response['result'] == 'error':
+        if isinstance(response, list):
+            return True
+        else:
             reason = response['reason']
             message = response['message']
             self.error = 'Balance error: ' + reason
             return False
-        else:
-            return True
