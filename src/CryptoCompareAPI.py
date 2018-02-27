@@ -115,4 +115,4 @@ class TradeHistory:
         ethusdTuple = ( self.ethusdTimes, self.ethusdCloses,
                         self.ethusdRange, self.ethusdDelta)
 
-        return (btcusdTuple, ethusdTuple)
+        return [btcusdTuple, ethusdTuple]
