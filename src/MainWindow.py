@@ -533,13 +533,13 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 #return
 
             if item['currency'] == 'BTC':
-                self.btcBalanceLabel.setText(item['amount']+' BTC')
-                self.btcAvailableLabel.setText(item['available']+' BTC')
+                self.btcBalanceLabel.setText(item['amount'])
+                self.btcAvailableLabel.setText(item['available'])
             elif item['currency'] == 'USD':
                 self.usdBalanceLabel.setText('$'+item['amount'])
                 self.usdAvailableLabel.setText('$'+item['available'])
             elif item['currency'] == 'ETH':
-                self.ethBalanceLabel.setText(item['amount']+' ETH')
-                self.ethAvailableLabel.setText(item['available']+' ETH')
+                self.ethBalanceLabel.setText(item['amount'])
+                self.ethAvailableLabel.setText(item['available'])
 
         self.statusBar.showMessage('Balances updated.')
