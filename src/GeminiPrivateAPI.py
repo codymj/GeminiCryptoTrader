@@ -25,7 +25,10 @@ class GeminiPrivateAPI:
     # Receive balances from Gemini
     ############################################################################
     def getBalances(self):
-        baseUrl = 'https://api.gemini.com/v1/balances'
+        if self.account['isSandbox']:
+            baseUrl = 'https://api.sandbox.gemini.com/v1/balances'
+        else:
+            baseUrl = 'https://api.gemini.com/v1/balances'
         nonce = int(round(time.time()*1000))
         apiKey = self.account.get('apiKey')
         secret = self.account.get('secretKey')
@@ -47,6 +50,7 @@ class GeminiPrivateAPI:
         }
 
         response = requests.request("POST", baseUrl, headers=headers)
+
         response = json.loads(response.text)
         if self.validResponse(response):
             self.balances = response
