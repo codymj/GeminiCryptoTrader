@@ -5,10 +5,8 @@
 #                                                                              #
 ################################################################################
 
-import sys, json, os.path, icons, urllib, datetime
-import threading, requests, base64, hmac, time
-from datetime import datetime
-from hashlib import sha384
+import sys, json, os.path, icons, urllib, datetime, threading, time
+from datetime import datetime as dt
 from urllib.request import urlopen
 from urllib.error import URLError
 from PyQt5 import uic, QtGui, QtWidgets
@@ -29,7 +27,8 @@ from OptionsDialog import OptionsDialog
 from OrderBookDialog import OrderBookDialog
 from AboutDialog import AboutDialog
 from EncryptFiles import *
-from GeminiPublicAPI import Ticker
+from GeminiPublicAPI import *
+from GeminiPrivateAPI import *
 from CryptoCompareAPI import TradeHistory
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
@@ -46,9 +45,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     hasConnection = False   # Internet connection detected
     tickerThread = None     # Thread for updating tickers
     plotThread = None       # Thread for updating plots
-    balances = []           # List of balance info from Gemini
-    btcusdPlotData = []     # Trade history for btcusd
-    ethusdPlotData = []     # Trade history for ethusd
 
     # Initializer
     def __init__(self):
@@ -89,7 +85,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.toggleStatusBarAction.triggered.connect(self.toggleStatusBar)
         self.showOrderBookAction.triggered.connect(self.openOrderBookDialog)
         self.aboutAction.triggered.connect(self.openAboutDialog)
-        #self.connectButton.clicked.connect(self.getTradeHistory)
+        self.connectButton.clicked.connect(self.getBalances)
 
     # Run start up processes
     ############################################################################
@@ -440,9 +436,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             if not self.hasConnection:
                 continue
             else:
-                ticker = Ticker()
-                btcusdTicker, ethusdTicker = ticker.getData()
-                self.updateTickerGui(btcusdTicker, ethusdTicker)
+                tickerList = GeminiPublicAPI().getTickers()
+                self.updateTickerGui(tickerList)
 
             # Wait 15 seconds
             time.sleep(15)
@@ -455,15 +450,18 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 continue
             else:
                 tradeHistory = TradeHistory()
-                btcusdTuple, ethusdTuple = tradeHistory.getData()
-                self.updatePlots(btcusdTuple, ethusdTuple)
+                tupleList = tradeHistory.getData()
+                self.updatePlots(tupleList)
 
             # Wait 15 seconds
             time.sleep(15)
 
     # Updates plots for trade history
     ############################################################################
-    def updatePlots(self, btcusdTuple, ethusdTuple):
+    def updatePlots(self, tupleList):
+        btcusdTuple = tupleList[0]
+        ethusdTuple = tupleList[1]
+
         # times = [0], closes = [1], range = [2], delta = [3]
 
         # Update range and delta
@@ -482,11 +480,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         # Customize axis
         btcXTicks = btcusdTuple[0][::240]
-        btcXTicks = [
-            datetime.fromtimestamp(i).strftime('%H:%M') for i in btcXTicks]
+        btcXTicks = [dt.fromtimestamp(i).strftime('%H:%M') for i in btcXTicks]
         ethXTicks = ethusdTuple[0][::240]
-        ethXTicks = [
-            datetime.fromtimestamp(i).strftime('%H:%M') for i in ethXTicks]
+        ethXTicks = [dt.fromtimestamp(i).strftime('%H:%M') for i in ethXTicks]
 
         btcAx.xaxis.grid(b=None, which='major', linestyle=':')
         btcAx.yaxis.grid(b=None, which='major', linestyle=':')
@@ -504,53 +500,37 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.btcCanvas.draw()
         self.ethCanvas.draw()
 
-    # Receive balances from Gemini
-    ############################################################################
-    def getBalances(self):
-        baseUrl = 'https://api.gemini.com/v1/balances'
-        nonce = int(round(time.time()*1000))
-        apiKey = self.account.get('apiKey')
-        secret = self.account.get('secretKey')
-        request = '/v1/balances'
-
-        payload = {'request': request, 'nonce': nonce}
-        b64 = base64.b64encode(str.encode(json.dumps(payload)))
-
-        signature = hmac.new(str.encode(secret),
-            b64, hashlib.sha384).hexdigest()
-
-        headers = {
-            'Content-Type': "text/plain",
-            'Content-Length': "0",
-            'X-GEMINI-APIKEY': apiKey,
-            'X-GEMINI-PAYLOAD': b64,
-            'X-GEMINI-SIGNATURE': signature,
-            'Cache-Control': "no-cache"
-        }
-
-        response = requests.request("POST", baseUrl, headers=headers)
-        self.balances = json.loads(response.text)
-
-        self.updateBalanceGui()
-
     # Updates the ticker labels
     ############################################################################
-    def updateTickerGui(self, btcusdTicker, ethusdTicker):
-        if not btcusdTicker['last']:
-            return
-        if not ethusdTicker['last']:
-            return
+    def updateTickerGui(self, tickerList):
+        # Make sure there are ticker values for last price
+        for ticker in tickerList:
+            if not ticker['last']:
+                return
 
-        self.btcLastPriceLabel.setText('$' + btcusdTicker['last'])
-        self.ethLastPriceLabel.setText('$' + ethusdTicker['last'])
+        self.btcLastPriceLabel.setText('$' + tickerList[0]['last'])
+        self.ethLastPriceLabel.setText('$' + tickerList[1]['last'])
+
+    # Gets account balances from Gemini
+    ############################################################################
+    def getBalances(self):
+        balances = GeminiPrivateAPI(self.account).getBalances()
+        self.updateBalanceGui(balances)
 
     # Updates balance labels
     ############################################################################
-    def updateBalanceGui(self):
-        for item in self.balances:
+    def updateBalanceGui(self, balances):
+        # Handle error
+        if isinstance(balances, str):
+            msg = QMessageBox()
+            msg.setText(balances)
+            msg.exec()
+            return
+
+        for item in balances:
             # Error
-            if item == 'result':
-                return
+            #if item == 'result':
+                #return
 
             if item['currency'] == 'BTC':
                 self.btcBalanceLabel.setText(item['amount']+' BTC')
