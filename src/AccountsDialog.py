@@ -15,18 +15,16 @@ from PyQt5.QtWidgets import QMessageBox, QDesktopWidget, QRadioButton
 
 class AccountsDialog(QtWidgets.QDialog, Ui_AccountsDialog):
     # Class data
-    accounts = []
-    lastUsedAccount = {}
-    settings = {}
-    password = ''
+    accounts = []       # List of saved accounts
+    account = {}        # Currently selected/last loaded account
+    settings = {}       # Program settings
 
     # Initializer
-    def __init__(self, parent, accounts, settings, password):
+    def __init__(self, parent, accounts, settings):
         super(AccountsDialog, self).__init__(parent)
         self.initUI()
         self.accounts = accounts
         self.settings = settings
-        self.password = password
         self.setLastUsedAccount()
         self.centerOnScreen()
 
@@ -44,16 +42,6 @@ class AccountsDialog(QtWidgets.QDialog, Ui_AccountsDialog):
         # Set trader role as default
         self.traderCB.setChecked(True)
 
-    # Trader check box toggled, enable heartbeat option
-    ############################################################################
-    @pyqtSlot()
-    def traderCBToggled(self):
-        if self.traderCB.isChecked():
-            self.heartbeatCB.setEnabled(True)
-        else:
-            self.heartbeatCB.setChecked(False)
-            self.heartbeatCB.setEnabled(False)
-
     # Return account list
     ############################################################################
     @pyqtSlot()
@@ -63,28 +51,27 @@ class AccountsDialog(QtWidgets.QDialog, Ui_AccountsDialog):
     # Adds a new account
     ############################################################################
     def addAccount(self):
-        data = self.toJson()
-        self.accounts.append(data)
+        data = self.inputToJson()
+
+        if self.isValidInput(data, False):
+            self.accounts.append(data)
 
     # Update saved account information
     ############################################################################
     @pyqtSlot()
     def updateAccount(self):
-        data = self.toJson()
+        data = self.inputToJson()
 
-        # Search through account data to edit
-        for i in self.accounts:
-            if i['accountId'] == data['accountId']:
-                i['isTrader'] == data['isTrader']
-                i['hasHeartbeat'] == data['hasHeartbeat']
-                i['isFundManager'] == data['isFundManager']
-                i['apiKey'] = data['apiKey']
-                i['secretKey'] = data['secretKey']
-                i['isSandbox'] = data['isSandbox']
-
-        # Write updates to file
-        with open('Accounts.json', 'w') as f:
-            json.dump(self.accounts, f)
+        # Search through account data to edit if input is valid
+        if self.isValidInput(data, True):
+            for i in self.accounts:
+                if i['accountId'] == data['accountId']:
+                    i['isTrader'] == data['isTrader']
+                    i['hasHeartbeat'] == data['hasHeartbeat']
+                    i['isFundManager'] == data['isFundManager']
+                    i['apiKey'] = data['apiKey']
+                    i['secretKey'] = data['secretKey']
+                    i['isSandbox'] = data['isSandbox']
 
     # Open the manage accounts dialog
     ############################################################################
@@ -97,7 +84,7 @@ class AccountsDialog(QtWidgets.QDialog, Ui_AccountsDialog):
 
     # Translate input data into a JSON object
     ############################################################################
-    def toJson(self):
+    def inputToJson(self):
         # Get data from input
         data = {
             'lastUsed':         True,
@@ -110,15 +97,11 @@ class AccountsDialog(QtWidgets.QDialog, Ui_AccountsDialog):
             'isSandbox':        self.sandboxCB.isChecked()
         }
 
-        # Check for valid input
-        if not self.validateInput(data, True):
-            return
-
         return data
 
     # Validate input; forUpdate is a flag for updating already saved account
     ############################################################################
-    def validateInput(self, data, forUpdate):
+    def isValidInput(self, data, forUpdate):
         # Make sure at least one role is enabled
         if not self.traderCB.isChecked() and not self.fundManagerCB.isChecked():
             msg = QMessageBox()
@@ -168,8 +151,8 @@ class AccountsDialog(QtWidgets.QDialog, Ui_AccountsDialog):
             self.apiKeyLE.setText('')
             self.secretKeyLE.setText('')
             self.sandboxCB.setChecked(False)
-            self.lastUsedAccount = self.toJson()
-            self.accounts.append(self.lastUsedAccount)
+            self.account = self.inputToJson()
+            self.accounts.append(self.account)
         else:
             for i in self.accounts:
                 if i['lastUsed'] == True:
@@ -180,8 +163,18 @@ class AccountsDialog(QtWidgets.QDialog, Ui_AccountsDialog):
                     self.apiKeyLE.setText(i['apiKey'])
                     self.secretKeyLE.setText(i['secretKey'])
                     self.sandboxCB.setChecked(i['isSandbox'])
-                    self.lastUsedAccount = i
+                    self.account = i
                     break
+
+    # Trader check box toggled, enable heartbeat option
+    ############################################################################
+    @pyqtSlot()
+    def traderCBToggled(self):
+        if self.traderCB.isChecked():
+            self.heartbeatCB.setEnabled(True)
+        else:
+            self.heartbeatCB.setChecked(False)
+            self.heartbeatCB.setEnabled(False)
 
     # Centers dialog on the screen
     ############################################################################
@@ -190,3 +183,8 @@ class AccountsDialog(QtWidgets.QDialog, Ui_AccountsDialog):
         top = (desktopSize.height() / 2) - (self.height() / 2)
         left = (desktopSize.width() / 2) - (self.width() / 2)
         self.move(left, top)
+
+    # Close event
+    ############################################################################
+    def closeEvent(self, event):
+        return

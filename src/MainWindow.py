@@ -334,7 +334,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     ############################################################################
     @pyqtSlot()
     def openAccountsDialog(self):
-        ad = AccountsDialog(self, self.accounts, self.settings, self.password)
+        ad = AccountsDialog(self, self.accounts, self.settings)
         if ad.exec_():
             self.updateAccounts(ad.getAccounts())
 
