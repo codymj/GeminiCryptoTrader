@@ -74,7 +74,7 @@ class TradeHistory:
     ############################################################################
     def computePriceRange(self):
         btcusdMaxHigh = max(self.btcusdHighs)
-        btcusdMinLow = max(self.btcusdLows)
+        btcusdMinLow = min(self.btcusdLows)
         self.btcusdRange = ('${:,.2f}'.format(btcusdMinLow)
                             + ' - '
                             + '${:,.2f}'.format(btcusdMaxHigh))
