@@ -534,18 +534,15 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     # Updates balance labels
     ############################################################################
     def updateBalanceGui(self, balances):
-        # Handle error
+        # Handle error which is returned as a string from Gemini
         if isinstance(balances, str):
             msg = QMessageBox()
             msg.setText(balances)
             msg.exec()
             return
 
+        # Update balances
         for item in balances:
-            # Error
-            #if item == 'result':
-                #return
-
             if item['currency'] == 'BTC':
                 self.btcBalanceLabel.setText(item['amount'])
                 self.btcAvailableLabel.setText(item['available'])
