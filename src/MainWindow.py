@@ -12,7 +12,7 @@ from urllib.error import URLError
 from PyQt5 import uic, QtGui, QtWidgets
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QLabel, QPushButton, QMessageBox, QFileDialog
-from PyQt5.QtCore import pyqtSlot
+from PyQt5.QtCore import pyqtSlot, pyqtSignal
 from ui_MainWindow import Ui_MainWindow
 from AccountsDialog import AccountsDialog
 from EncryptDialog import EncryptDialog
@@ -36,14 +36,20 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as md
 
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
+    # Create signals
+    internetStatus = pyqtSignal(bool)
+
     # Class data
+    connectIcon = None      # QPixmap for connection icon in status bar
+    connectIconLabel = None # Label for QPixmap
     accounts = []           # List of accounts
     account = {}            # Current account
     accountsDir = ''        # Path of Accounts file
     settings = {}           # Loaded settings
     settingsDir = ''        # Path of Settings file
     password = ''           # Password in plaintext (never saved)
-    hasConnection = False   # Internet connection detected
+    internetUp = False      # Internet connection status
+    connected = False       # True if connected to Gemini exchange
     tickerThread = None     # Thread for updating tickers
     plotThread = None       # Thread for updating plots
 
@@ -60,10 +66,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.btcLayout.addWidget(self.btcCanvas)
         self.ethLayout.addWidget(self.ethCanvas)
 
-
         self.startUp()
 
         # Start threads
+        self.internetThread.start()
         self.tickerThread.start()
         self.plotThread.start()
 
@@ -73,6 +79,12 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         # Status Bar
         self.statusBar.showMessage('Gemini CryptoTrader started...')
+
+        # Set connectivity icon in status bar
+        self.connectIcon = QPixmap(':/red-circle.png')
+        self.connectIconLabel = QLabel(self)
+        self.connectIconLabel.setPixmap(self.connectIcon)
+        self.statusBar.addPermanentWidget(self.connectIconLabel)
 
         # Connect actions
         self.setupAction.triggered.connect(self.openAccountsDialog)
@@ -86,25 +98,22 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.toggleStatusBarAction.triggered.connect(self.toggleStatusBar)
         self.showOrderBookAction.triggered.connect(self.openOrderBookDialog)
         self.aboutAction.triggered.connect(self.openAboutDialog)
+
+        # Connect buttons
         self.connectButton.clicked.connect(self.getBalances)
+
+        # Connect custom signals
+        self.internetStatus.connect(self.updateInternetStatus)
 
     # Run start up processes
     ############################################################################
     def startUp(self):
-        # Load settings
         self.loadSettings()
-
-        # Load accounts
         self.loadAccounts()
 
-        # Check internet connection & get market data if possible
-        if self.internetUp(self):
-            self.hasConnection = True
-        else:
-            self.hasConnection = False
-            self.statusBar.showMessage('No internet connection detected.')
-
         # Build threads
+        self.internetThread = threading.Thread(target=self.checkInternet, args=())
+        self.internetThread.daemon = True
         self.tickerThread = threading.Thread(target=self.tickerLoop, args=())
         self.tickerThread.daemon = True
         self.plotThread = threading.Thread(target=self.plotLoop, args=())
@@ -376,6 +385,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
     # Opens options dialog
     ############################################################################
+    @pyqtSlot()
     def openOptionsDialog(self):
         od = OptionsDialog(self, self.settings)
         od.exec_()
@@ -407,54 +417,55 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
     # Checks internet connection using Google IP
     ############################################################################
-    @staticmethod
-    def internetUp(self):
-        connected = False
-        try:
-            urlopen('http://74.125.21.99', timeout=1)
-            connected = True
-        except URLError as err:
-            connected = False
-            print(err)
+    def checkInternet(self):
+        while True:
+            status = False
+            try:
+                urlopen('http://74.125.21.99', timeout=1)
+                status = True
+            except URLError as err:
+                status= False
 
-        # Set connectivity icon in status bar
-        if connected:
-            self.connectIconPM = QPixmap(':/orange-circle.png')
+            self.internetStatus.emit(status)
+            time.sleep(5)
+
+    # Updates internet status
+    ############################################################################
+    def updateInternetStatus(self, status):
+        if status and self.connected:
+            self.connectIcon = QPixmap(':/green-circle.png')
+        elif status and not self.connected:
+            self.connectIcon = QPixmap(':/orange-circle.png')
         else:
-            self.connectIconPM = QPixmap(':/red-circle.png')
+            self.connectIcon = QPixmap(':/red-circle.png')
+            self.statusBar.showMessage('No internet connection detected.')
+        self.connectIconLabel.setPixmap(self.connectIcon)
 
-        self.connectIconLabel = QLabel(self)
-        self.connectIconLabel.setPixmap(self.connectIconPM)
-        self.statusBar.setToolTip('Green when connected to exchange')
-        self.statusBar.addPermanentWidget(self.connectIconLabel)
-
-        return connected
+        self.internetUp = status
 
     # Gets public market data from Gemini
     ############################################################################
     def tickerLoop(self):
         while True:
-            if not self.hasConnection:
-                continue
-            else:
+            if self.internetUp:
                 tickerList = GeminiPublicAPI().getTickers()
                 self.updateTickerGui(tickerList)
+            else:
+                continue
 
-            # Wait 15 seconds
             time.sleep(15)
 
     # Gets trade data from CryptoCompare
     ############################################################################
     def plotLoop(self):
         while True:
-            if not self.hasConnection:
-                continue
-            else:
+            if self.internetUp:
                 tradeHistory = TradeHistory()
                 tupleList = tradeHistory.getData()
                 self.updatePlots(tupleList)
+            else:
+                continue
 
-            # Wait 15 seconds
             time.sleep(15)
 
     # Updates plots for trade history
