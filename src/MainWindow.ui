@@ -386,7 +386,7 @@
        </attribute>
        <layout class="QGridLayout" name="gridLayout_8">
         <item row="0" column="0">
-         <widget class="QListView" name="transactionsList"/>
+         <widget class="QListView" name="transactionsListView"/>
         </item>
        </layout>
       </widget>
@@ -396,7 +396,7 @@
        </attribute>
        <layout class="QGridLayout" name="gridLayout_9">
         <item row="0" column="0">
-         <widget class="QListView" name="openOrdersList"/>
+         <widget class="QListView" name="openOrdersListView"/>
         </item>
        </layout>
       </widget>
@@ -406,7 +406,7 @@
        </attribute>
        <layout class="QGridLayout" name="gridLayout_10">
         <item row="0" column="0">
-         <widget class="QListView" name="conditionalList"/>
+         <widget class="QListView" name="conditionalListView"/>
         </item>
        </layout>
       </widget>
