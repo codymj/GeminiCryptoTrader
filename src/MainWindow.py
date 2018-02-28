@@ -33,6 +33,7 @@ from CryptoCompareAPI import TradeHistory
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 import matplotlib.pyplot as plt
+import matplotlib.dates as md
 
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     # Class data
@@ -459,10 +460,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     # Updates plots for trade history
     ############################################################################
     def updatePlots(self, tupleList):
+        # times = [0], closes = [1], range = [2], delta = [3]
+
         btcusdTuple = tupleList[0]
         ethusdTuple = tupleList[1]
-
-        # times = [0], closes = [1], range = [2], delta = [3]
 
         # Update range and delta
         self.btcRangeLabel.setText(btcusdTuple[2])
@@ -479,22 +480,24 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         ethAx = self.ethFigure.add_subplot(111)
 
         # Customize axis
-        btcXTicks = btcusdTuple[0][::240]
-        btcXTicks = [dt.fromtimestamp(i).strftime('%H:%M') for i in btcXTicks]
-        ethXTicks = ethusdTuple[0][::240]
-        ethXTicks = [dt.fromtimestamp(i).strftime('%H:%M') for i in ethXTicks]
-
         btcAx.xaxis.grid(b=None, which='major', linestyle=':')
         btcAx.yaxis.grid(b=None, which='major', linestyle=':')
         ethAx.xaxis.grid(b=None, which='major', linestyle=':')
         ethAx.yaxis.grid(b=None, which='major', linestyle=':')
 
-        btcAx.set_xticklabels(btcXTicks)
-        ethAx.set_xticklabels(ethXTicks)
+        btcXTicks = [dt.fromtimestamp(i) for i in btcusdTuple[0]]
+        ethXTicks = [dt.fromtimestamp(i) for i in ethusdTuple[0]]
+
+        xfmt = md.DateFormatter('%H:%M')
+        btcAx.xaxis.set_major_formatter(xfmt)
+        ethAx.xaxis.set_major_formatter(xfmt)
+        xloc = md.HourLocator(interval=4)
+        btcAx.xaxis.set_major_locator(xloc)
+        ethAx.xaxis.set_major_locator(xloc)
 
         # Plot data
-        btcAx.plot(btcusdTuple[0], btcusdTuple[1], '-', color='k', linewidth=1)
-        ethAx.plot(ethusdTuple[0], ethusdTuple[1], '-', color='k', linewidth=1)
+        btcAx.plot(btcXTicks, btcusdTuple[1], '-', color='k', linewidth=1)
+        ethAx.plot(ethXTicks, ethusdTuple[1], '-', color='k', linewidth=1)
 
         # Refresh
         self.btcCanvas.draw()
