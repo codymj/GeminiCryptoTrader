@@ -14,7 +14,7 @@ encrypted with AES.
 Screenshots:
 ------------
 MainWindow:
-<p><img src="https://i.imgur.com/xKXXDiM.png" /></p>
+<p><img src="https://i.imgur.com/clSoHXo.png" /></p>
 <p><img src="https://i.imgur.com/k3BByZj.png" /></p>
 Account setup:
 <p><img src="https://i.imgur.com/OGI3bXT.png" /></p>
