@@ -439,9 +439,43 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         else:
             self.connectIcon = QPixmap(':/red-circle.png')
             self.statusBar.showMessage('No internet connection detected.')
+
+            # Clear data from main window
+            self.clearAllData()
+
         self.connectIconLabel.setPixmap(self.connectIcon)
 
         self.internetUp = status
+
+    # Clears all GUI data from main window
+    ############################################################################
+    def clearAllData(self):
+        # Plots
+        self.btcFigure.clear()
+        self.ethFigure.clear()
+
+        # Ticker
+        self.btcLastPriceLabel.setText('')
+        self.btcDeltaLabel.setText('')
+        self.btcRangeLabel.setText('')
+        self.ethLastPriceLabel.setText('')
+        self.ethDeltaLabel.setText('')
+        self.ethRangeLabel.setText('')
+
+        # Balances
+        self.usdBalanceLabel.setText('')
+        self.btcBalanceLabel.setText('')
+        self.ethBalanceLabel.setText('')
+
+        # Available for trading
+        self.usdAvailableLabel.setText('')
+        self.btcAvailableLabel.setText('')
+        self.ethAvailableLabel.setText('')
+
+        # List views
+        self.transactionsListView.setStringList([])
+        self.openOrdersListView.setStringList([])
+        self.conditionalListView.setStringList([])
 
     # Gets public market data from Gemini
     ############################################################################
