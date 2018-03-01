@@ -5,7 +5,7 @@
 #                                                                              #
 ################################################################################
 
-import sys, json, os.path, icons, urllib, datetime, threading, time
+import sys, json, os.path, icons, urllib, datetime, threading, time, websocket
 from datetime import datetime as dt
 from urllib.request import urlopen
 from urllib.error import URLError
@@ -37,7 +37,7 @@ import matplotlib.dates as md
 
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     # Create signals
-    internetStatus = pyqtSignal(bool)
+    netStatusSignal = pyqtSignal(bool)
 
     # Class data
     connectIcon = None      # QPixmap for connection icon in status bar
@@ -100,10 +100,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.aboutAction.triggered.connect(self.openAboutDialog)
 
         # Connect buttons
-        self.connectButton.clicked.connect(self.getBalances)
+        self.connectButton.clicked.connect(self.getTrades)
 
         # Connect custom signals
-        self.internetStatus.connect(self.updateInternetStatus)
+        self.netStatusSignal.connect(self.updateInternetStatus)
 
     # Run start up processes
     ############################################################################
@@ -426,7 +426,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             except URLError as err:
                 status= False
 
-            self.internetStatus.emit(status)
+            self.netStatusSignal.emit(status)
             time.sleep(5)
 
     # Updates internet status
@@ -547,6 +547,17 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # Refresh
         self.btcCanvas.draw()
         self.ethCanvas.draw()
+
+    # Gets trade info from Gemini
+    ############################################################################
+    def getTrades(self):
+        trades = GeminiPrivateAPI(self.account).getTrades('btcusd')
+        self.updateTradeGUI(trades)
+
+    # Updates trades in trades list view
+    ############################################################################
+    def updateTradeGUI(self, trades):
+        print(trades)
 
     # Updates the ticker labels
     ############################################################################

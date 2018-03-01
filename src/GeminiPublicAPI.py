@@ -7,16 +7,17 @@
 
 # https://docs.gemini.com/websocket-api/#market-data
 
-import json, datetime, urllib
+import json, datetime, urllib, websocket
 from urllib.request import urlopen
 
 class GeminiPublicAPI:
     # Class data
-    baseUrl = 'https://api.gemini.com/v1/'
+    baseUrl = ''
     symbols = []        # List of symbols: ["btcusd", "ethusd", "ethbtc"]
 
     # Initializer
     def __init__(self):
+        self.baseUrl = 'https://api.gemini.com/v1/'
         self.getSymbols()
 
     # Updates ticker data

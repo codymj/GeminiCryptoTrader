@@ -14,47 +14,92 @@ from urllib.request import urlopen
 
 class GeminiPrivateAPI:
     # Class data
+    baseUrl = ''
     account = {}            # Account data
-    balances = []           # List of balance info from Gemini
+    #balances = []           # List of balance info from Gemini
+    #trades = []             # List of trades info from Gemini
     error = ''              # Error string
 
     # Initializer
     def __init__(self, account):
         self.account = account
 
-    # Receive balances from Gemini
-    ############################################################################
-    def getBalances(self):
         if self.account['isSandbox']:
-            baseUrl = 'https://api.sandbox.gemini.com/v1/balances'
+            self.baseUrl = 'https://api.sandbox.gemini.com/v1/'
         else:
-            baseUrl = 'https://api.gemini.com/v1/balances'
+            self.baseUrl = 'https://api.gemini.com/v1/'
+
+    # Generates b64-encoded payload
+    ############################################################################
+    def generatePayload(self, request, symbol=None):
         nonce = int(round(time.time()*1000))
         apiKey = self.account.get('apiKey')
         secret = self.account.get('secretKey')
-        request = '/v1/balances'
 
-        payload = {'request': request, 'nonce': nonce}
-        b64 = base64.b64encode(str.encode(json.dumps(payload)))
+        if symbol == None:
+            payload = {
+                'request': request,
+                'nonce': nonce,
+            }
+        else:
+            payload = {
+                'request': request,
+                'nonce': nonce,
+                'symbol': symbol
+            }
 
-        signature = hmac.new(str.encode(secret),
-            b64, hashlib.sha384).hexdigest()
+        return base64.b64encode(str.encode(json.dumps(payload)))
+
+    # Generates signature
+    ############################################################################
+    def generateSignature(self, b64):
+        secret = self.account.get('secretKey')
+
+        return hmac.new(str.encode(secret), b64, hashlib.sha384).hexdigest()
+
+    # Generates header
+    ############################################################################
+    def generateHeaders(self, b64, sig):
+        apiKey = self.account.get('apiKey')
 
         headers = {
             'Content-Type': "text/plain",
             'Content-Length': "0",
             'X-GEMINI-APIKEY': apiKey,
             'X-GEMINI-PAYLOAD': b64,
-            'X-GEMINI-SIGNATURE': signature,
+            'X-GEMINI-SIGNATURE': sig,
             'Cache-Control': "no-cache"
         }
+        return headers
+
+    # Receive balances from Gemini
+    ############################################################################
+    def getBalances(self):
+        baseUrl = self.baseUrl + 'balances'
+        b64Payload = self.generatePayload('/v1/balances')
+        signature = self.generateSignature(b64Payload)
+        headers = self.generateHeaders(b64Payload, signature)
 
         response = requests.request("POST", baseUrl, headers=headers)
-
         response = json.loads(response.text)
         if self.validResponse(response):
-            self.balances = response
-            return self.balances
+            return response
+        else:
+            return self.error
+
+    # Get past trades
+    ############################################################################
+    def getTrades(self, symbol):
+        baseUrl = self.baseUrl + 'mytrades'
+        b64Payload = self.generatePayload('/v1/mytrades', symbol)
+        signature = self.generateSignature(b64Payload)
+        headers = self.generateHeaders(b64Payload, signature)
+
+        response = requests.request("POST", baseUrl, headers=headers)
+        response = json.loads(response.text)
+        if self.validResponse(response):
+            self.trades = response
+            return response
         else:
             return self.error
 
