@@ -386,7 +386,7 @@
        </attribute>
        <layout class="QGridLayout" name="gridLayout_8">
         <item row="0" column="0">
-         <widget class="QListView" name="transactionsListView"/>
+         <widget class="QListView" name="tradesListView"/>
         </item>
        </layout>
       </widget>
