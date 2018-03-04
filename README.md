@@ -18,6 +18,8 @@ MainWindow:
 <p><img src="https://i.imgur.com/dEXF9vV.png" /></p>
 Account setup:
 <p><img src="https://i.imgur.com/OGI3bXT.png" /></p>
+Trades:
+<p><img src="https://i.imgur.com/LqMqdVB.png" /></p>
 Order book:
 <p><img src="https://i.imgur.com/tNgxkqp.png" /></p>
 
