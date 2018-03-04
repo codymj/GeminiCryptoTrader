@@ -380,9 +380,9 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="transactionsTab">
+      <widget class="QWidget" name="tradesTab">
        <attribute name="title">
-        <string>Transactions</string>
+        <string>Trades</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_8">
         <item row="0" column="0">

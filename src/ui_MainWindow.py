@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'MainWindow.ui'
 #
-# Created by: PyQt5 UI code generator 5.10
+# Created by: PyQt5 UI code generator 5.10.1
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -207,14 +207,14 @@ class Ui_MainWindow(object):
         self.verticalLayout.addLayout(self.horizontalLayout)
         self.horizontalLayout_2.addLayout(self.verticalLayout)
         self.mainTabWidget.addTab(self.dashboardTab, "")
-        self.transactionsTab = QtWidgets.QWidget()
-        self.transactionsTab.setObjectName("transactionsTab")
-        self.gridLayout_8 = QtWidgets.QGridLayout(self.transactionsTab)
+        self.tradesTab = QtWidgets.QWidget()
+        self.tradesTab.setObjectName("tradesTab")
+        self.gridLayout_8 = QtWidgets.QGridLayout(self.tradesTab)
         self.gridLayout_8.setObjectName("gridLayout_8")
-        self.tradesListView = QtWidgets.QListView(self.transactionsTab)
+        self.tradesListView = QtWidgets.QListView(self.tradesTab)
         self.tradesListView.setObjectName("tradesListView")
         self.gridLayout_8.addWidget(self.tradesListView, 0, 0, 1, 1)
-        self.mainTabWidget.addTab(self.transactionsTab, "")
+        self.mainTabWidget.addTab(self.tradesTab, "")
         self.openOrdersTab = QtWidgets.QWidget()
         self.openOrdersTab.setObjectName("openOrdersTab")
         self.gridLayout_9 = QtWidgets.QGridLayout(self.openOrdersTab)
@@ -329,7 +329,7 @@ class Ui_MainWindow(object):
         self.disconnectButton.setText(_translate("MainWindow", "&Disconnect"))
         self.connectButton.setText(_translate("MainWindow", "&Connect"))
         self.mainTabWidget.setTabText(self.mainTabWidget.indexOf(self.dashboardTab), _translate("MainWindow", "Dashboard"))
-        self.mainTabWidget.setTabText(self.mainTabWidget.indexOf(self.transactionsTab), _translate("MainWindow", "Transactions"))
+        self.mainTabWidget.setTabText(self.mainTabWidget.indexOf(self.tradesTab), _translate("MainWindow", "Trades"))
         self.mainTabWidget.setTabText(self.mainTabWidget.indexOf(self.openOrdersTab), _translate("MainWindow", "Open Orders"))
         self.mainTabWidget.setTabText(self.mainTabWidget.indexOf(self.conditionalTab), _translate("MainWindow", "Conditional"))
         self.fileMenu.setTitle(_translate("MainWindow", "&File"))
