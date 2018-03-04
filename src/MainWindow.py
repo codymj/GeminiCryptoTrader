@@ -10,7 +10,7 @@ from datetime import datetime as dt
 from urllib.request import urlopen
 from urllib.error import URLError
 from PyQt5 import uic, QtGui, QtWidgets
-from PyQt5.QtGui import QPixmap
+from PyQt5.QtGui import QPixmap, QStandardItemModel, QStandardItem, QFontDatabase
 from PyQt5.QtWidgets import QLabel, QPushButton, QMessageBox, QFileDialog
 from PyQt5.QtCore import pyqtSlot, pyqtSignal
 from ui_MainWindow import Ui_MainWindow
@@ -52,6 +52,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     connected = False       # True if connected to Gemini exchange
     tickerThread = None     # Thread for updating tickers
     plotThread = None       # Thread for updating plots
+    tradesModel = None      # Item model for tradesListView
 
     # Initializer
     def __init__(self):
@@ -76,6 +77,14 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     # Initialize UI
     def initUI(self):
         self.setupUi(self)
+
+        # Set fixed-width font for list views
+        fixedFont = QFontDatabase.systemFont(1)
+        self.tradesListView.setFont(fixedFont)
+
+        # Setup models
+        self.tradesModel = QStandardItemModel(self.tradesListView)
+        self.tradesListView.setModel(self.tradesModel)
 
         # Status Bar
         self.statusBar.showMessage('Gemini CryptoTrader started...')
@@ -557,7 +566,30 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     # Updates trades in trades list view
     ############################################################################
     def updateTradeGUI(self, trades):
-        print(trades)
+        sList = []
+        width = 15
+
+        for trade in trades:
+            orderID = "{0:<{1}}".format(str(trade.get('order_id'))[:width], width)
+            orderID.ljust(width)
+            tradeType = "{0:<{1}}".format(str(trade.get('type'))[:5], 5)
+            tradeType.ljust(5)
+            time = "{0:<{1}}".format(str(trade.get('timestampms'))[:width], width)
+            time.ljust(width)
+            amount = "{0:<{1}}".format(str(trade.get('amount'))[:width], width)
+            amount.ljust(width)
+            price = "{0:<{1}}".format(str(trade.get('price'))[:width], width)
+            price.ljust(width)
+            fee = "{0:<{1}}".format(str(trade.get('fee_amount'))[:width], width)
+            fee.ljust(width)
+            s = orderID + tradeType + time + amount + price + fee
+            sList.append(s)
+
+        self.tradesModel.clear()
+        for s in sList:
+            item = QStandardItem()
+            item.setText(s)
+            self.tradesModel.appendRow(item)
 
     # Updates the ticker labels
     ############################################################################
