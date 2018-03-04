@@ -9,7 +9,7 @@ import sys, json, datetime, time, math, requests
 from datetime import date, timedelta, datetime
 import numpy as np
 
-class TradeHistory:
+class CryptoCompareAPI:
     # Class data
     baseUrl = 'https://min-api.cryptocompare.com/data/histominute'
 
@@ -33,14 +33,11 @@ class TradeHistory:
 
     # Initializer
     def __init__(self):
-        self.getTradeHistory()
-        self.separateData()
-        self.computePriceRange()
-        self.computePriceDelta()
+        self.updateTradeHistory()
 
-    # Receive trade history from CryptoCompare
+    # Updates trade data history
     ############################################################################
-    def getTradeHistory(self):
+    def updateTradeHistory(self):
         # TODO: Allow parameter to set day range
         btcusdParams = '?fsym=BTC&tsym=USD&limit=1440&e=Gemini'
         ethusdParams = '?fsym=ETH&tsym=USD&limit=1440&e=Gemini'
@@ -54,6 +51,21 @@ class TradeHistory:
         response = requests.request('GET', self.baseUrl+ethusdParams)
         ethusdHistory = json.loads(response.text)
         self.ethusdData = ethusdHistory['Data']
+
+    # Receive trade history from CryptoCompare
+    ############################################################################
+    def getTradeHistory(self):
+        # Parse and compute
+        self.separateData()
+        self.computePriceRange()
+        self.computePriceDelta()
+
+        btcusdTuple = ( self.btcusdTimes, self.btcusdCloses,
+                        self.btcusdRange, self.btcusdDelta)
+        ethusdTuple = ( self.ethusdTimes, self.ethusdCloses,
+                        self.ethusdRange, self.ethusdDelta)
+
+        return [btcusdTuple, ethusdTuple]
 
     # Separates trade history data into relevant lists for further computations
     ############################################################################
@@ -106,13 +118,3 @@ class TradeHistory:
             self.ethusdDelta = '(' + '${:,.2f}'.format(self.ethusdDelta) + ')'
         else:
             self.ethusdDelta = '${:,.2f}'.format(self.ethusdDelta)
-
-    # Sends data to main window
-    ############################################################################
-    def getData(self):
-        btcusdTuple = ( self.btcusdTimes, self.btcusdCloses,
-                        self.btcusdRange, self.btcusdDelta)
-        ethusdTuple = ( self.ethusdTimes, self.ethusdCloses,
-                        self.ethusdRange, self.ethusdDelta)
-
-        return [btcusdTuple, ethusdTuple]
