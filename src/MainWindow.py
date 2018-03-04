@@ -29,7 +29,7 @@ from AboutDialog import AboutDialog
 from EncryptFiles import *
 from GeminiPublicAPI import *
 from GeminiPrivateAPI import *
-from CryptoCompareAPI import TradeHistory
+from CryptoCompareAPI import *
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 import matplotlib.pyplot as plt
@@ -503,8 +503,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def plotLoop(self):
         while True:
             if self.internetUp:
-                tradeHistory = TradeHistory()
-                tupleList = tradeHistory.getData()
+                tupleList = CryptoCompareAPI().getTradeHistory()
                 self.updatePlots(tupleList)
             else:
                 continue
@@ -569,23 +568,61 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         sList = []
         width = 15
 
+        self.tradesModel.clear()
+
+        orderID = 'Order ID'
+        orderID = "{0:<{1}}".format(orderID[:width], width)
+
+        tradeType = 'Type'
+        tradeType = "{0:<{1}}".format(tradeType[:7], 7)
+
+        time = 'Date + Time'
+        time = "{0:<{1}}".format(time[:25], 25)
+
+        amount = 'Amount'
+        amount = "{0:<{1}}".format(amount[:width], width)
+
+        price = 'Price'
+        price = "{0:<{1}}".format(price[:width], width)
+
+        fee = 'Fee'
+        fee = "{0:<{1}}".format(fee[:5], 5)
+
+        s = orderID + tradeType + time + amount + price + fee
+        sList.append(s)
+        hline = '-' * 87
+        sList.append(hline)
+
         for trade in trades:
             orderID = "{0:<{1}}".format(str(trade.get('order_id'))[:width], width)
             orderID.ljust(width)
-            tradeType = "{0:<{1}}".format(str(trade.get('type'))[:5], 5)
-            tradeType.ljust(5)
-            time = "{0:<{1}}".format(str(trade.get('timestampms'))[:width], width)
-            time.ljust(width)
+
+            tradeType = "{0:<{1}}".format(str(trade.get('type'))[:7], 7)
+            tradeType.ljust(7)
+
+            time = trade.get('timestampms')
+            time = dt.fromtimestamp(time/1000.0).strftime("%Y-%m-%d %H:%M:%S")
+            time = "{0:<{1}}".format(str(time)[:25], 25)
+            time.ljust(25)
+
             amount = "{0:<{1}}".format(str(trade.get('amount'))[:width], width)
             amount.ljust(width)
-            price = "{0:<{1}}".format(str(trade.get('price'))[:width], width)
+
+            price = str('$' + '%.2f' % float(trade.get('price')))
+            price = "{0:<{1}}".format(price[:width], width)
             price.ljust(width)
-            fee = "{0:<{1}}".format(str(trade.get('fee_amount'))[:width], width)
-            fee.ljust(width)
+
+            if trade.get('fee_currency') == 'USD':
+                fee = str('$' + '%.2f' % float(trade.get('fee_amount')))
+                fee = "{0:<{1}}".format(fee[:5], 5)
+                fee.ljust(5)
+            else:
+                fee = "{0:<{1}}".format(str(trade.get('fee'))[:width], width)
+                fee.ljust(width)
+
             s = orderID + tradeType + time + amount + price + fee
             sList.append(s)
 
-        self.tradesModel.clear()
         for s in sList:
             item = QStandardItem()
             item.setText(s)
