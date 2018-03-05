@@ -92,7 +92,7 @@ class CryptoCompareAPI:
                             + '${:,.2f}'.format(btcusdMaxHigh))
 
         ethusdMaxHigh = max(self.ethusdHighs)
-        ethusdMinLow = max(self.ethusdLows)
+        ethusdMinLow = min(self.ethusdLows)
         self.ethusdRange = ('${:,.2f}'.format(ethusdMinLow)
                             + ' - '
                             + '${:,.2f}'.format(ethusdMaxHigh))
