@@ -52,6 +52,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     connected = False       # True if connected to Gemini exchange
     tickerThread = None     # Thread for updating tickers
     plotThread = None       # Thread for updating plots
+    tradesThread = None     # Thread for updating trades
+    balancesThread = None   # Thread for updating balances
     tradesModel = None      # Item model for tradesListView
 
     # Initializer
@@ -109,7 +111,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.aboutAction.triggered.connect(self.openAboutDialog)
 
         # Connect buttons
-        self.connectButton.clicked.connect(self.getTrades)
+        self.connectButton.clicked.connect(self.startPrivateThreads)
 
         # Connect custom signals
         self.netStatusSignal.connect(self.updateInternetStatus)
@@ -127,6 +129,19 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.tickerThread.daemon = True
         self.plotThread = threading.Thread(target=self.plotLoop, args=())
         self.plotThread.daemon = True
+        self.tradesThread = threading.Thread(target=self.tradesLoop, args=())
+        self.tradesThread.daemon = True
+        self.balancesThread = threading.Thread(target=self.balancesLoop, args=())
+        self.balancesThread.daemon = True
+
+    # Starts private threads
+    ############################################################################
+    def startPrivateThreads(self):
+        if self.internetUp:
+            self.tradesThread.start()
+            self.balancesThread.start()
+        else:
+            print('No internet detected. Check connection.')
 
     # When user closes program, save all data & encrypt if necessary
     ############################################################################
@@ -510,6 +525,28 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
             time.sleep(15)
 
+    # Gets user trades from Gemini
+    ############################################################################
+    def tradesLoop(self):
+        while True:
+            trades = GeminiPrivateAPI(self.account).getTrades('btcusd')
+
+            if isinstance(trades, list):
+                self.connected = True
+            else:
+                self.connected = False
+
+            self.updateTradeGUI(trades)
+            time.sleep(15)
+
+    # Gets user balance and available for trade
+    ############################################################################
+    def balancesLoop(self):
+        while True:
+            balances = GeminiPrivateAPI(self.account).getBalances()
+            self.updateBalanceGui(balances)
+            time.sleep(15)
+
     # Updates plots for trade history
     ############################################################################
     def updatePlots(self, tupleList):
@@ -555,12 +592,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # Refresh
         self.btcCanvas.draw()
         self.ethCanvas.draw()
-
-    # Gets trade info from Gemini
-    ############################################################################
-    def getTrades(self):
-        trades = GeminiPrivateAPI(self.account).getTrades('btcusd')
-        self.updateTradeGUI(trades)
 
     # Updates trades in trades list view
     ############################################################################
@@ -639,12 +670,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.btcLastPriceLabel.setText('$' + tickerList[0]['last'])
         self.ethLastPriceLabel.setText('$' + tickerList[1]['last'])
 
-    # Gets account balances from Gemini
-    ############################################################################
-    def getBalances(self):
-        balances = GeminiPrivateAPI(self.account).getBalances()
-        self.updateBalanceGui(balances)
-
     # Updates balance labels
     ############################################################################
     def updateBalanceGui(self, balances):
@@ -666,5 +691,3 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             elif item['currency'] == 'ETH':
                 self.ethBalanceLabel.setText(item['amount'])
                 self.ethAvailableLabel.setText(item['available'])
-
-        self.statusBar.showMessage('Balances updated.')
