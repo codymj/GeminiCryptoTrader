@@ -17,8 +17,6 @@ class EncryptDialog(QtWidgets.QDialog, Ui_EncryptDialog):
     def __init__(self, parent):
         super(EncryptDialog, self).__init__(parent)
         self.initUI()
-        self.loadSettings()
-        self.centerOnScreen()
 
     # Initialize UI
     ############################################################################
@@ -28,6 +26,8 @@ class EncryptDialog(QtWidgets.QDialog, Ui_EncryptDialog):
         # Connect actions
         self.yesButton.clicked.connect(self.accept)
         self.noButton.clicked.connect(self.reject)
+
+        self.centerOnScreen()
 
     # Centers dialog on the screen
     ############################################################################

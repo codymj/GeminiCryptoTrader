@@ -5,7 +5,8 @@
 #                                                                              #
 ################################################################################
 
-import sys, json, os.path, icons, urllib, datetime, threading, time, websocket
+import sys, json, os.path, urllib, datetime, threading, time, websocket
+import resources
 from datetime import datetime as dt
 from urllib.request import urlopen
 from urllib.error import URLError
@@ -45,9 +46,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     connectIconLabel = None # Label for QPixmap
     accounts = []           # List of accounts
     account = {}            # Current account
-    accountsDir = ''        # Path of Accounts file
+    accountsPath = ''       # Path of Accounts file
     settings = {}           # Loaded settings
-    settingsDir = ''        # Path of Settings file
+    settingsPath = ''       # Path of Settings file
     password = ''           # Password in plaintext (never saved)
     internetUp = False      # Internet connection status
     connected = False       # True if connected to Gemini exchange
@@ -121,13 +122,14 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     ############################################################################
     def startUp(self):
         # Load settings
-        self.settings, self.settingsDir = loadSettings()
+        self.settings, self.settingsPath = loadSettings()
         if self.settings['encrypted']:
             self.openPasswordDialog()
 
         # Load accounts, last used account and update enabled actions
-        self.accounts, self.accountsDir = loadAccounts(self.settings, self.password)
-        self.account = getLastUsedAccount(self.accounts)
+        self.accounts, self.accountsPath = loadAccounts(self.settings, self.password)
+        if self.accounts:
+            self.account = getLastUsedAccount(self.accounts)
         self.updateEnabledActions()
 
         # Build threads
@@ -156,8 +158,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def closeEvent(self, event):
         # Save data
         self.statusBar.showMessage('Saving data...')
-        saveAccounts(self.accounts, self.accountsDir, self.settings, self.password)
-        saveSettings(self.settings, self.settingsDir)
+        saveAccounts(self.accounts, self.accountsPath, self.settings, self.password)
+        saveSettings(self.settings, self.settingsPath)
 
     # Enables/disables actions based on roles in the account
     ############################################################################
@@ -169,6 +171,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.conditionalAction.setEnabled(False)
             self.genDepositAction.setEnabled(False)
             self.withdrawToAction.setEnabled(False)
+            self.connectButton.setEnabled(False)
+            self.disconnectButton.setEnabled(False)
             return
 
         # Account has trader role
@@ -228,7 +232,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def openAccountsDialog(self):
         ad = AccountsDialog(self, self.accounts, self.settings)
         if ad.exec_():
-            self.updateAccounts(ad.getAccounts())
+            self.accounts = ad.getAccounts()
 
     # Opens buy dialog
     ############################################################################
