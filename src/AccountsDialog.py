@@ -6,7 +6,6 @@
 ################################################################################
 
 import sys, json, os.path, base64
-from EncryptFiles import *
 from ui_AccountsDialog import Ui_AccountsDialog
 from ManageDialog import ManageDialog
 from PyQt5 import uic, QtGui, QtWidgets

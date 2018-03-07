@@ -26,7 +26,8 @@ from WithdrawToDialog import WithdrawToDialog
 from OptionsDialog import OptionsDialog
 from OrderBookDialog import OrderBookDialog
 from AboutDialog import AboutDialog
-from EncryptFiles import *
+from EncryptDecryptData import *
+from LoadSaveData import *
 from GeminiPublicAPI import *
 from GeminiPrivateAPI import *
 from CryptoCompareAPI import *
@@ -119,8 +120,15 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     # Run start up processes
     ############################################################################
     def startUp(self):
-        self.loadSettings()
-        self.loadAccounts()
+        # Load settings
+        self.settings, self.settingsDir = loadSettings()
+        if self.settings['encrypted']:
+            self.openPasswordDialog()
+
+        # Load accounts, last used account and update enabled actions
+        self.accounts, self.accountsDir = loadAccounts(self.settings, self.password)
+        self.account = getLastUsedAccount(self.accounts)
+        self.updateEnabledActions()
 
         # Build threads
         self.internetThread = threading.Thread(target=self.checkInternet, args=())
@@ -148,152 +156,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def closeEvent(self, event):
         # Save data
         self.statusBar.showMessage('Saving data...')
-        self.saveAccounts()
-        self.saveSettings()
-
-        # Encrypt data
-        if self.settings['encrypted']:
-            self.statusBar.showMessage('Encrypting data...')
-            encryptFile(self.password, self.accountsDir)
-
-    # Loads settings
-    ############################################################################
-    def loadSettings(self):
-        if not os.path.exists('Settings.json'):
-            msg = QMessageBox()
-            msg.setText('No settings file found.')
-            msg.setInformativeText('What would you like to do?')
-            msg.setStandardButtons(QMessageBox.Open | QMessageBox.Ignore)
-            returnVal = msg.exec_()
-
-            # Browse for file
-            if returnVal == QMessageBox.Open:
-                fileName = QFileDialog.getOpenFileName(self,
-                'Browse for Settings.json', '.', 'Settings.json')
-                if os.path.exists(fileName[0]):
-                    with open(fileName[0], 'r') as f:
-                        self.settings = json.load(f)
-                    self.settingsDir = fileName[0]
-                else:
-                    self.openEncryptDialog()
-                    self.settingsDir = 'Settings.json'
-
-            # Create new file
-            elif returnVal == QMessageBox.Ignore:
-                self.openEncryptDialog()
-        else:
-            with open('Settings.json', 'r') as f:
-                self.settings = json.load(f)
-
-        if self.settings['encrypted']:
-            self.openPasswordDialog()
-
-    # Updates settings
-    ############################################################################
-    def updateSettings(self, settings):
-        self.settings = settings
-
-    # Loads last used account data from Accounts.json file
-    ############################################################################
-    def loadAccounts(self):
-        # No account files found. Browse or create new files
-        if (not self.settings['encrypted'] and
-        not os.path.exists('Accounts.json')):
-            msg = QMessageBox()
-            msg.setText('No Accounts.json file found.')
-            msg.setInformativeText('What would you like to do?')
-            msg.setStandardButtons(QMessageBox.Open | QMessageBox.Ignore)
-            returnVal = msg.exec_()
-
-            # Browse for file
-            if returnVal == QMessageBox.Open:
-                fileName = QFileDialog.getOpenFileName(self,
-                'Browse for Accounts.json', '.', 'Accounts.json')
-                if os.path.exists(fileName[0]):
-                    with open(fileName[0], 'r') as f:
-                        accounts = json.load(f)
-                    self.accountsDir = fileName[0]
-                    self.updateAccounts(accounts)
-                else:
-                    self.openAccountsDialog()
-
-            # Create new file
-            elif returnVal == QMessageBox.Ignore:
-                self.openAccountsDialog()
-        # No account files found. Browse or create new files
-        elif self.settings['encrypted'] and not os.path.exists('Accounts.enc'):
-            msg = QMessageBox()
-            msg.setText('No Accounts.enc file found.')
-            msg.setInformativeText('What would you like to do?')
-            msg.setStandardButtons(QMessageBox.Open | QMessageBox.Ignore)
-            returnVal = msg.exec_()
-
-            # Browse for file
-            if returnVal == QMessageBox.Open:
-                fileName = QFileDialog.getOpenFileName(self,
-                'Browse for Accounts.enc', '.', 'Accounts.enc')
-                if os.path.exists(fileName[0]):
-                    self.statusBar.showMessage('Decrypting data...')
-                    decryptFile(self.password, fileName[0])
-                    self.statusBar.showMessage('Loading data...')
-                    newFileName = os.path.dirname(os.path.abspath(fileName[0]))
-                    newFileName = newFileName + '/Accounts.json'
-                    with open(newFileName, 'r') as f:
-                        accounts = json.load(f)
-                    self.accountsDir = newFileName
-                    self.updateAccounts(accounts)
-                else:
-                    self.openAccountsDialog()
-
-            # Create new file
-            elif returnVal == QMessageBox.Ignore:
-                self.openAccountsDialog()
-        # Load accounts
-        elif not self.settings['encrypted'] and os.path.exists('Accounts.json'):
-            self.statusBar.showMessage('Loading data...')
-            with open('Accounts.json', 'r') as f:
-                accounts = json.load(f)
-            self.updateAccounts(accounts)
-        # Decrypt
-        elif self.settings['encrypted'] and os.path.exists('Accounts.enc'):
-            self.statusBar.showMessage('Decrypting data...')
-            decryptFile(self.password, 'Accounts.enc')
-            self.statusBar.showMessage('Loading data...')
-            with open('Accounts.json', 'r') as f:
-                accounts = json.load(f)
-            self.updateAccounts(accounts)
-        # Else ???
-        else:
-            print('ERROR: Account files missing.')
-            return
-
-        self.statusBar.showMessage('Data loaded successfully.')
-
-    # Updates accounts and calls updateEnabledActions()
-    ############################################################################
-    def updateAccounts(self, accounts):
-        self.accounts = accounts
-        for i in accounts:
-            if i['lastUsed'] == True:
-                self.account = i
-
-        self.updateEnabledActions()
-
-    # Saves accounts to file
-    ############################################################################
-    def saveAccounts(self):
-        if not self.accountsDir:
-            self.accountsDir = 'Accounts.json'
-        with open(self.accountsDir, 'w') as f:
-            json.dump(self.accounts, f)
-
-    # Saves settings to file
-    ############################################################################
-    def saveSettings(self):
-        if not self.settingsDir:
-            self.settingsDir = 'Settings.json'
-        with open(self.settingsDir, 'w') as f:
-            json.dump(self.settings, f)
+        saveAccounts(self.accounts, self.accountsDir, self.settings, self.password)
+        saveSettings(self.settings, self.settingsDir)
 
     # Enables/disables actions based on roles in the account
     ############################################################################
@@ -329,13 +193,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     ############################################################################
     @pyqtSlot()
     def openEncryptDialog(self):
-        if not self.settings:
-            ed = EncryptDialog(self)
-            if ed.exec_():
-                self.openPasswordSetupDialog()
-            else:
-                self.openAccountsDialog()
-        elif self.settings['encrypted']:
+        if self.settings['encrypted']:
             msg = QMessageBox()
             msg.setText('Your files are already encrypted.')
             msg.exec()
@@ -352,7 +210,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         psd = PasswordSetupDialog(self, self.settings)
         if psd.exec_():
             self.password = psd.getPassword()
-            self.updateSettings(psd.getSettings())
+            self.settings = psd.getSettings()
 
     # Opens password dialog for decryption
     ############################################################################
@@ -448,7 +306,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 urlopen('http://74.125.21.99', timeout=1)
                 status = True
             except URLError as err:
-                status= False
+                status = False
 
             self.netStatusSignal.emit(status)
             time.sleep(5)
@@ -496,10 +354,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.btcAvailableLabel.setText('')
         self.ethAvailableLabel.setText('')
 
-        # List views
-        self.transactionsListView.setStringList([])
-        self.openOrdersListView.setStringList([])
-        self.conditionalListView.setStringList([])
+        # Clear list view models
+        self.tradesModel.clear()
+
 
     # Gets public market data from Gemini
     ############################################################################

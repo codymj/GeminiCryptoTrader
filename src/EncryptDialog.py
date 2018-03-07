@@ -12,9 +12,6 @@ from PyQt5.QtWidgets import QDesktopWidget
 from PyQt5.QtCore import pyqtSlot
 
 class EncryptDialog(QtWidgets.QDialog, Ui_EncryptDialog):
-    # Class data
-    settings = {}
-
     # Initializer
     ############################################################################
     def __init__(self, parent):
@@ -31,25 +28,6 @@ class EncryptDialog(QtWidgets.QDialog, Ui_EncryptDialog):
         # Connect actions
         self.yesButton.clicked.connect(self.accept)
         self.noButton.clicked.connect(self.reject)
-
-    # Creates Settings.json file on first run
-    ############################################################################
-    def loadSettings(self):
-        # If file doesn't exist, create one with basic info
-        if not os.path.exists('Settings.json'):
-            self.settings = {
-                'encrypted':  False,
-                'password':   ''
-            }
-            with open('Settings.json', 'w') as f:
-                    json.dump(self.settings, f)
-        else:
-            # Clear temp data to reload
-            self.settings.clear()
-
-            # Load file
-            with open('Settings.json', 'r') as f:
-                self.settings = json.load(f)
 
     # Centers dialog on the screen
     ############################################################################
