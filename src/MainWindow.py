@@ -101,6 +101,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         # Connect actions
         self.setupAction.triggered.connect(self.openAccountsDialog)
+        self.loadSettingsAction.triggered.connect(self.loadSettingsFile)
+        self.loadAccountsAction.triggered.connect(self.loadAccountsFile)
+        self.saveSettingsAction.triggered.connect(self.saveSettingsFile)
+        self.saveAccountsAction.triggered.connect(self.saveAccountsFile)
         self.buyAction.triggered.connect(self.openBuyDialog)
         self.sellAction.triggered.connect(self.openSellDialog)
         self.conditionalAction.triggered.connect(self.openConditionalDialog)
@@ -127,13 +131,15 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.openPasswordDialog()
 
         # Load accounts, last used account and update enabled actions
-        self.accounts, self.accountsPath = loadAccounts(self.settings, self.password)
+        self.accounts, self.accountsPath = loadAccounts(self.settings,
+            self.password)
         if self.accounts:
             self.account = getLastUsedAccount(self.accounts)
         self.updateEnabledActions()
 
         # Build threads
-        self.internetThread = threading.Thread(target=self.checkInternet, args=())
+        self.internetThread = threading.Thread(target=self.checkInternet,
+            args=())
         self.internetThread.daemon = True
         self.tickerThread = threading.Thread(target=self.tickerLoop, args=())
         self.tickerThread.daemon = True
@@ -141,11 +147,44 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.plotThread.daemon = True
         self.tradesThread = threading.Thread(target=self.tradesLoop, args=())
         self.tradesThread.daemon = True
-        self.balancesThread = threading.Thread(target=self.balancesLoop, args=())
+        self.balancesThread = threading.Thread(target=self.balancesLoop,
+            args=())
         self.balancesThread.daemon = True
+
+    # Load settings from user-specified file
+    ############################################################################
+    @pyqtSlot()
+    def loadSettingsFile(self):
+        self.settings, self.settingsPath = loadSettings(userLoad=True)
+        if self.settings['encrypted']:
+            self.openPasswordDialog()
+
+    # Load accounts from user-specified file
+    ############################################################################
+    @pyqtSlot()
+    def loadAccountsFile(self):
+        self.accounts, self.accountsPath = loadAccounts(self.settings,
+            self.password, userLoad=True)
+        if self.accounts:
+            self.account = getLastUsedAccount(self.accounts)
+        self.updateEnabledActions()
+
+    # Save settings to user-specified file
+    ############################################################################
+    @pyqtSlot()
+    def saveSettingsFile(self):
+        saveSettings(self.settings, self.settingsPath, userSave=True)
+
+    # Save accounts to user-specified file
+    ############################################################################
+    @pyqtSlot()
+    def saveAccountsFile(self):
+        saveAccounts(self.accounts, self.accountsPath, self.settings,
+            self.password, userSave=True)
 
     # Starts private threads
     ############################################################################
+    @pyqtSlot()
     def startPrivateThreads(self):
         if self.internetUp:
             self.tradesThread.start()
@@ -157,8 +196,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     ############################################################################
     def closeEvent(self, event):
         # Save data
-        self.statusBar.showMessage('Saving data...')
-        saveAccounts(self.accounts, self.accountsPath, self.settings, self.password)
+        saveAccounts(self.accounts, self.accountsPath,
+            self.settings, self.password)
         saveSettings(self.settings, self.settingsPath)
 
     # Enables/disables actions based on roles in the account
@@ -486,7 +525,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         sList.append(hline)
 
         for trade in trades:
-            orderID = "{0:<{1}}".format(str(trade.get('order_id'))[:width], width)
+            orderID = "{0:<{1}}".format(str(trade.get('order_id'))[:width],
+                width)
             orderID.ljust(width)
 
             tradeType = "{0:<{1}}".format(str(trade.get('type'))[:7], 7)

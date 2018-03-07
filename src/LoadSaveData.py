@@ -7,7 +7,7 @@
 
 import sys, json, os.path
 from EncryptDecryptData import *
-from PyQt5.QtWidgets import QMessageBox, QFileDialog
+from PyQt5.QtWidgets import QFileDialog
 
 # Loads settings
 ################################################################################
@@ -15,20 +15,34 @@ def loadSettings(userLoad=False):
     settings = {}
     settingsPath = '../data/Settings.json'
 
-    if not os.path.exists(settingsPath):
-        settings = {
-            'encrypted':  False,
-            'password':   ''
-        }
+    # If no user-specified path
+    if not userLoad:
+        if not os.path.exists(settingsPath):
+            settings = {
+                'encrypted':  False,
+                'password':   ''
+            }
+        else:
+            with open(settingsPath, 'r') as f:
+                settings = json.load(f)
     else:
-        with open(settingsPath, 'r') as f:
-            settings = json.load(f)
+        fileName = QFileDialog.getOpenFileName(None,
+        'Browse for Settings.json', '.', 'Settings.json')
+        if os.path.exists(fileName[0]):
+            with open(fileName[0], 'r') as f:
+                settings = json.load(f)
+            settingsPath = fileName[0]
+        else:
+            settings = {
+                'encrypted':  False,
+                'password':   ''
+            }
 
     return settings, settingsPath
 
 # Saves settings to file
 ################################################################################
-def saveSettings(settings, settingsPath):
+def saveSettings(settings, settingsPath, userSave=False):
     if not os.path.exists(settingsPath):
         settingsPath = '../data/Settings.json'
 
@@ -43,27 +57,40 @@ def loadAccounts(settings, password, userLoad=False):
 
     # If encrypted
     if not settings['encrypted']:
-        # If not a user-specified file path
+        # If no user-specified file path
         if not userLoad:
             accountsPath = '../data/Accounts.json'
-        # else:
-            # Set user-specified file path
-        # Open and load
-        if os.path.exists(accountsPath):
-            with open(accountsPath, 'r') as f:
-                accounts = json.load(f)
+            if os.path.exists(accountsPath):
+                with open(accountsPath, 'r') as f:
+                    accounts = json.load(f)
+        else:
+            fileName = QFileDialog.getOpenFileName(None,
+            'Browse for Accounts.json', '.', 'Accounts.json')
+            if os.path.exists(fileName[0]):
+                with open(fileName[0], 'r') as f:
+                    accounts = json.load(f)
+                accountsPath = fileName[0]
+            else:
+                accountsPath = '../data/Accounts.json'
     else:
-        # If not a user-specified file path
+        # If no user-specified file path
         if not userLoad:
             accountsPath = '../data/Accounts.enc'
-        # else:
-            # Set user-specified file path
-        # Decrypt, open, load, encrypt
-        if os.path.exists(accountsPath):
-            decryptFile(password, accountsPath)
-            with open('../data/Accounts.json', 'r') as f:
-                accounts = json.load(f)
-            encryptFile(password, accountsPath)
+            if os.path.exists(accountsPath):
+                decryptFile(password, accountsPath)
+                with open('../data/Accounts.json', 'r') as f:
+                    accounts = json.load(f)
+                encryptFile(password, accountsPath)
+        else:
+            fileName = QFileDialog.getOpenFileName(None,
+            'Browse for Accounts.enc', '.', 'Accounts.enc')
+            if os.path.exists(fileName[0]):
+                decryptFile(password, fileName[0])
+                newFileName = os.path.dirname(os.path.abspath(fileName[0]))
+                newFileName = newFileName + '/Accounts.json'
+                with open(newFileName, 'r') as f:
+                    accounts = json.load(f)
+                accountsPath = newFileName
 
     return accounts, accountsPath
 
@@ -80,7 +107,7 @@ def getLastUsedAccount(accounts):
 
 # Saves accounts to file
 ################################################################################
-def saveAccounts(accounts, accountsPath, settings, password):
+def saveAccounts(accounts, accountsPath, settings, password, userSave=False):
     if settings['encrypted']:
         if not os.path.exists(accountsPath):
             print('ERROR:  Account file is missing. Cannot save.')
