@@ -43,11 +43,17 @@ def loadSettings(userLoad=False):
 # Saves settings to file
 ################################################################################
 def saveSettings(settings, settingsPath, userSave=False):
-    if not os.path.exists(settingsPath):
-        settingsPath = '../data/Settings.json'
-
-    with open(settingsPath, 'w') as f:
-        json.dump(settings, f)
+    # If no user-specified path
+    if not userSave:
+        if not os.path.exists(settingsPath):
+            settingsPath = '../data/Settings.json'
+        with open(settingsPath, 'w') as f:
+            json.dump(settings, f)
+    else:
+        fileName = QFileDialog.getSaveFileName(None,
+        'Save Settings.json', '.', 'Settings.json')
+        with open(fileName[0], 'w') as f:
+            json.dump(settings, f)
 
 # Loads last used account data from Accounts.json file
 ################################################################################
@@ -108,18 +114,26 @@ def getLastUsedAccount(accounts):
 # Saves accounts to file
 ################################################################################
 def saveAccounts(accounts, accountsPath, settings, password, userSave=False):
-    if settings['encrypted']:
-        if not os.path.exists(accountsPath):
-            print('ERROR:  Account file is missing. Cannot save.')
-            return
+    if not userSave:
+        if settings['encrypted']:
+            if not os.path.exists(accountsPath):
+                print('ERROR:  Account file is missing. Cannot save.')
+                return
+            else:
+                decryptFile(password, accountsPath)
+                with open(accountsPath, 'w') as f:
+                    json.dump(accounts, f)
+                encryptFile(password, accountsPath)
         else:
-            decryptFile(password, accountsPath)
+            if not os.path.exists(accountsPath):
+                accountsPath = '../data/Accounts.json'
             with open(accountsPath, 'w') as f:
                 json.dump(accounts, f)
-            encryptFile(password, accountsPath)
     else:
-        if not os.path.exists(accountsPath):
-            accountsPath = '../data/Accounts.json'
-        with open(accountsPath, 'w') as f:
+        fileName = QFileDialog.getSaveFileName(None,
+        'Save Accounts', '.', '*.json, *.enc')
+        with open(fileName[0], 'w') as f:
             json.dump(accounts, f)
-
+        newAccountsPath = fileName[0]
+        if settings['encrypted']:
+            encryptFile(password, newAccountsPath)
