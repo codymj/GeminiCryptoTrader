@@ -38,3 +38,5 @@ API-Documentation/*
 *.json
 *.enc
 notes.txt
+GeminiCryptoTrader.sublime-project
+GeminiCryptoTrader.sublime-workspace
